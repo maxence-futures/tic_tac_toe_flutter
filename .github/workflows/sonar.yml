@@ -1,0 +1,55 @@
+name: SonarCloud
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  sonar:
+    name: Analyse SonarCloud
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Checkout complet (nécessaire pour le blame Git dans Sonar) ──────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── Flutter ─────────────────────────────────────────────────────────────
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      # ── Dépendances + génération de code ────────────────────────────────────
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate code (build_runner + gen-l10n)
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          flutter gen-l10n
+
+      # ── Tests + couverture ───────────────────────────────────────────────────
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Clean coverage (exclure fichiers générés)
+        run: |
+          sudo apt-get install -y lcov
+          lcov --remove coverage/lcov.info \
+            '**/*.g.dart' \
+            '**/*.freezed.dart' \
+            '**/*.gr.dart' \
+            '*/lib/l10n/*' \
+            --output-file coverage/lcov.info \
+            --ignore-errors unused
+
+      # ── Analyse SonarCloud ───────────────────────────────────────────────────
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

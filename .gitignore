@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# SonarQube / SonarCloud — cache local du scanner
+.scannerwork/
+# Ne jamais committer un token Sonar en clair
+sonar-project.properties.local
