@@ -1,0 +1,117 @@
+{
+  "@@locale": "fr",
+
+  "appTitle": "Tic Tac Toe",
+  "@appTitle": { "description": "Titre de l'application" },
+
+  "homeVersus": "vs",
+  "@homeVersus": { "description": "Séparateur entre les deux joueurs" },
+
+  "homeStartGame": "Lancer une partie",
+  "@homeStartGame": { "description": "Bouton pour démarrer une nouvelle partie" },
+
+  "homeHistory": "Historique des parties",
+  "@homeHistory": { "description": "Accès à l'historique" },
+
+  "playerSetupTitle": "Choisir un profil",
+  "@playerSetupTitle": { "description": "Titre de la page de sélection de profil" },
+
+  "playerSetupChooseProfile": "Sélectionnez votre profil",
+  "@playerSetupChooseProfile": { "description": "Sous-titre" },
+
+  "playerSetupNewProfile": "Nouveau profil",
+  "@playerSetupNewProfile": { "description": "Bouton créer un profil" },
+
+  "playerSetupNameHint": "Votre prénom",
+  "@playerSetupNameHint": { "description": "Placeholder du champ nom" },
+
+  "playerSetupContinue": "Continuer",
+  "@playerSetupContinue": { "description": "Bouton continuer" },
+
+  "playerSetupNoProfiles": "Aucun profil enregistré",
+  "@playerSetupNoProfiles": { "description": "Message liste vide" },
+
+  "difficultyTitle": "Niveau de difficulté",
+  "@difficultyTitle": { "description": "Titre de la page difficulté" },
+
+  "difficultySubtitle": "Choisissez votre adversaire",
+  "@difficultySubtitle": { "description": "Sous-titre" },
+
+  "difficultyEasy": "Facile",
+  "@difficultyEasy": { "description": "Niveau facile" },
+
+  "difficultyEasyDesc": "Le CPU joue au hasard — parfait pour débuter.",
+  "@difficultyEasyDesc": { "description": "Description niveau facile" },
+
+  "difficultyMedium": "Moyen",
+  "@difficultyMedium": { "description": "Niveau moyen" },
+
+  "difficultyMediumDesc": "Le CPU alterne stratégie et coups aléatoires.",
+  "@difficultyMediumDesc": { "description": "Description niveau moyen" },
+
+  "difficultyHard": "Difficile",
+  "@difficultyHard": { "description": "Niveau difficile" },
+
+  "difficultyHardDesc": "Le CPU joue parfaitement — imbattable !",
+  "@difficultyHardDesc": { "description": "Description niveau difficile" },
+
+  "difficultyStart": "Lancer la partie",
+  "@difficultyStart": { "description": "Bouton lancer" },
+
+  "gameYourTurn": "À votre tour",
+  "@gameYourTurn": { "description": "Statut tour joueur" },
+
+  "gameCpuThinking": "Le CPU réfléchit…",
+  "@gameCpuThinking": { "description": "Statut tour CPU" },
+
+  "gameYouWon": "Vous avez gagné !",
+  "@gameYouWon": { "description": "Résultat victoire" },
+
+  "gameCpuWon": "Le CPU a gagné !",
+  "@gameCpuWon": { "description": "Résultat défaite" },
+
+  "gameDraw": "Match nul !",
+  "@gameDraw": { "description": "Résultat nul" },
+
+  "gamePlayAgain": "Rejouer",
+  "@gamePlayAgain": { "description": "Bouton rejouer" },
+
+  "gameBackHome": "Retour à l'accueil",
+  "@gameBackHome": { "description": "Bouton retour accueil" },
+
+  "historyTitle": "Historique des parties",
+  "@historyTitle": { "description": "Titre de la page historique" },
+
+  "historyEmpty": "Aucune partie jouée pour l'instant",
+  "@historyEmpty": { "description": "Message liste vide" },
+
+  "historyResultWin": "Victoire",
+  "@historyResultWin": { "description": "Résultat victoire" },
+
+  "historyResultLoss": "Défaite",
+  "@historyResultLoss": { "description": "Résultat défaite" },
+
+  "historyResultDraw": "Match nul",
+  "@historyResultDraw": { "description": "Résultat nul" },
+
+  "historyMoves": "coups",
+  "@historyMoves": { "description": "Unité nombre de coups" },
+
+  "replayTitle": "Déroulé de la partie",
+  "@replayTitle": { "description": "Titre de la page replay" },
+
+  "replayInitial": "Plateau vide — appuyez sur → pour commencer",
+  "@replayInitial": { "description": "Texte étape initiale" },
+
+  "replayStep": "Coup {step} sur {total}",
+  "@replayStep": {
+    "description": "Indicateur de progression",
+    "placeholders": {
+      "step": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "replayTimeline": "Chronologie des coups",
+  "@replayTimeline": { "description": "Titre de la timeline" }
+}

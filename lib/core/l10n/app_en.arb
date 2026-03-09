@@ -1,0 +1,51 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Tic Tac Toe",
+  "homeVersus": "vs",
+  "homeStartGame": "Start a game",
+  "homeHistory": "Game history",
+
+  "playerSetupTitle": "Choose a profile",
+  "playerSetupChooseProfile": "Select your profile",
+  "playerSetupNewProfile": "New profile",
+  "playerSetupNameHint": "Your name",
+  "playerSetupContinue": "Continue",
+  "playerSetupNoProfiles": "No profiles saved",
+
+  "difficultyTitle": "Difficulty level",
+  "difficultySubtitle": "Choose your opponent",
+  "difficultyEasy": "Easy",
+  "difficultyEasyDesc": "The CPU plays randomly — great for beginners.",
+  "difficultyMedium": "Medium",
+  "difficultyMediumDesc": "The CPU mixes strategy with random moves.",
+  "difficultyHard": "Hard",
+  "difficultyHardDesc": "The CPU plays perfectly — unbeatable!",
+  "difficultyStart": "Start game",
+
+  "gameYourTurn": "Your turn",
+  "gameCpuThinking": "CPU is thinking…",
+  "gameYouWon": "You won!",
+  "gameCpuWon": "CPU won!",
+  "gameDraw": "It's a draw!",
+  "gamePlayAgain": "Play again",
+  "gameBackHome": "Back to home",
+
+  "historyTitle": "Game history",
+  "historyEmpty": "No games played yet",
+  "historyResultWin": "Victory",
+  "historyResultLoss": "Defeat",
+  "historyResultDraw": "Draw",
+  "historyMoves": "moves",
+
+  "replayTitle": "Game replay",
+  "replayInitial": "Empty board — press → to start",
+  "replayStep": "Move {step} of {total}",
+  "@replayStep": {
+    "placeholders": {
+      "step": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "replayTimeline": "Move timeline"
+}
