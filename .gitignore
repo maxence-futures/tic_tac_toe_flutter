@@ -52,7 +52,7 @@ app.*.map.json
 # gen-l10n — fichiers générés de localisation
 lib/l10n/
 
-# SonarQube / SonarCloud — cache local du scanner
+$# SonarQube / SonarCloud — cache local du scanner
 .scannerwork/
 # Ne jamais committer un token Sonar en clair
 sonar-project.properties.local
