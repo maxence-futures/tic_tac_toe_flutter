@@ -22,13 +22,13 @@ The project serves as a reference implementation showcasing state management wit
 ## Features
 
 | Feature | Description |
-|---|---|
+| --- | --- |
 | **Player profiles** | Create and switch between multiple player profiles, persisted via SharedPreferences |
 | **Difficulty levels** | Easy / Medium / Hard CPU opponent powered by a Minimax algorithm |
 | **Game board** | Animated 3×3 board with winning line highlight |
-| **Game history** | Browse all past games, sorted by date |
+| **Game history** | Browse all past games, sorted by date — with a confirmation-gated "clear all" action |
 | **Move replay** | Step-by-step replay of any recorded game |
-| **Internationalization** | French 🇫🇷 and English 🇬🇧 supported |
+| **Internationalization** | French 🇫🇷 and English 🇬🇧 supported via ARB files |
 
 ---
 
@@ -36,38 +36,66 @@ The project serves as a reference implementation showcasing state management wit
 
 The project follows **Clean Architecture** with a strict feature-first folder structure.
 
-```
+```text
 lib/
-├── core/            # Shared infrastructure (theme, router, DB, services, extensions, widgets)
-│   ├── database/
-│   ├── extensions/
-│   ├── l10n/        # ARB files (i18n)
-│   ├── router/
-│   ├── services/    # SharedPreferences, ErrorTracking (interface + impl)
-│   ├── theme/
-│   └── ui/widgets/  # Mutualized UI components (TttBoardWidget, DifficultyBadge…)
+├── core/                    # Shared infrastructure
+│   ├── database/            # Drift database + models
+│   ├── domain/
+│   │   └── game_rules/      # BoardRules — pure, shared win-detection logic
+│   ├── extensions/          # BuildContext extensions (theme, l10n…)
+│   ├── l10n/                # ARB files (i18n source of truth)
+│   ├── router/              # AutoRoute configuration
+│   ├── services/            # SharedPreferences, ErrorTracking (interface + impl)
+│   ├── utils/               # TttProviderObserver (Riverpod logger)
+│   └── ui/
+│       ├── theme/           # AppColors, AppSpacing, AppTypography, AppDurations
+│       └── widgets/         # Shared widgets: TttBoardWidget, DifficultyBadge…
 └── features/
     ├── game/
-    │   ├── data/        # Drift model + repository impl
-    │   ├── domain/      # Entities (Freezed), repository interfaces, use cases
-    │   └── presentation/ # Riverpod notifiers, pages, widgets
+    │   ├── data/            # Drift repository impl
+    │   ├── domain/          # Entities (Freezed), repository interfaces, use cases
+    │   └── presentation/    # GameNotifier, pages, widgets
     ├── history/
     │   ├── data/
     │   ├── domain/
-    │   └── presentation/
+    │   └── presentation/    # HistoryNotifier, GameReplayNotifier
     ├── home/
     └── player/
+        ├── data/            # SharedPreferences repository impl
+        ├── domain/
+        └── presentation/    # PlayerNotifier
 ```
 
-Each feature respects the **dependency rule**: presentation → domain ← data.  
-Repository interfaces live in `domain/`, concrete implementations in `data/`.
+### Dependency rule
+
+`presentation` → `domain` ← `data`
+
+Repository interfaces live in `domain/`, concrete implementations in `data/`.  
+Pure game rules shared across features (`BoardRules`) live in `core/domain/` to avoid cross-feature imports.
+
+### Domain logic on entities
+
+State transitions that depend only on `GameState` are extension methods on the entity itself, keeping `GameNotifier` as a pure orchestrator:
+
+| Method | Responsibility |
+| --- | --- |
+| `GameState.canPlayerMove(int)` | Guard: is the human allowed to play at this position? |
+| `GameState.withMove(int, String)` | Pure state transition: apply a move and record it |
+| `GameState.evaluate()` | Determine won / draw / still playing |
+
+### Error handling
+
+All async operations use `dartz`'s `Either<Exception, T>`. On `Left`, every notifier:
+
+1. Forwards the exception to `ErrorTrackingService.captureException`
+2. Rethrows it so Riverpod surfaces an `AsyncError` to the UI
 
 ---
 
 ## Tech stack
 
 | Concern | Package |
-|---|---|
+| --- | --- |
 | State management | `flutter_riverpod` + `riverpod_generator` |
 | Navigation | `auto_route` + `auto_route_generator` |
 | Local DB | `drift` + `drift_flutter` |
@@ -76,6 +104,7 @@ Repository interfaces live in `domain/`, concrete implementations in `data/`.
 | Functional error handling | `dartz` (`Either<Exception, T>`) |
 | Animations | `flutter_animate` |
 | i18n | `flutter_localizations` + `intl` + `gen-l10n` |
+| Testing | `flutter_test` + `mockito` |
 
 ---
 
@@ -121,17 +150,34 @@ dart run build_runner build --delete-conflicting-outputs
 ## Running tests & coverage
 
 ```bash
-# Tests only
+# All tests
 flutter test
 
-# Tests + LCOV coverage report (cleans generated files from the report)
+# Tests + LCOV coverage report (strips generated files)
 make coverage
 ```
 
 The `make coverage` target runs `scripts/coverage.sh`, which:
+
 1. Executes `flutter test --coverage`
 2. Strips generated files from `coverage/lcov.info` with `lcov --remove`
 3. Optionally opens an HTML report in your browser (requires `brew install lcov`)
+
+### Test coverage
+
+| Layer | File | Strategy |
+| --- | --- | --- |
+| Core — database | `test/core/database/app_database_test.dart` | Real in-memory Drift DB |
+| Core — SharedPreferences | `test/core/services/shared_preferences/shared_preferences_service_test.dart` | Real in-memory storage |
+| Core — ErrorTracking | `test/core/services/error_tracking/error_tracking_service_test.dart` | Real impl |
+| Game — Minimax usecase | `test/features/game/domain/usecases/get_cpu_move_usecase_test.dart` | Pure function, no mock |
+| Game — SaveGame usecase | `test/features/game/domain/usecases/save_game_usecase_test.dart` | Mockito |
+| Game — GameNotifier | `test/features/game/presentation/providers/game_notifier_test.dart` | ProviderContainer |
+| History — GetHistory usecase | `test/features/history/domain/usecases/get_game_history_usecase_test.dart` | Mockito |
+| History — GameReplayNotifier | `test/features/history/presentation/providers/game_replay_notifier_test.dart` | ProviderContainer |
+| Player — repository impl | `test/features/player/data/repositories/player_profile_repository_impl_test.dart` | Real in-memory storage |
+
+**Notable:** the Minimax (`hard` difficulty) is covered by a **property-based test** — 100 games are simulated against a random opponent and O must never lose.
 
 ---
 
@@ -165,7 +211,7 @@ make sonar
 
 The workflow defined in [`.github/workflows/sonar.yml`](.github/workflows/sonar.yml) runs on every push and pull request targeting `main` or `develop`.
 
-```
+```text
 push / PR
     │
     ▼
@@ -187,23 +233,26 @@ push / PR
 
 ## Project structure
 
-```
+```text
 .
 ├── .github/
 │   └── workflows/
-│       └── sonar.yml          # CI — test + SonarCloud scan
+│       └── sonar.yml                   # CI — test + SonarCloud scan
 ├── lib/
 │   ├── app.dart
 │   ├── main.dart
 │   ├── core/
+│   │   ├── domain/game_rules/          # BoardRules (shared win-detection)
+│   │   ├── services/                   # ErrorTracking + SharedPreferences
+│   │   └── ui/theme/                   # AppColors, AppSpacing, AppTypography, AppDurations
 │   └── features/
 ├── test/
 │   ├── core/
 │   └── features/
 ├── scripts/
-│   └── coverage.sh            # Local coverage helper
-├── Makefile                   # coverage | sonar | ci-quality
-├── sonar-project.properties   # SonarCloud configuration
+│   └── coverage.sh                     # Local coverage helper
+├── Makefile                            # coverage | sonar | ci-quality
+├── sonar-project.properties            # SonarCloud configuration
 ├── l10n.yaml
 └── pubspec.yaml
 ```

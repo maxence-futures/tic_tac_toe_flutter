@@ -24,24 +24,35 @@ class PlayerNotifier extends _$PlayerNotifier {
     final activeResult = await repo.getActiveProfile();
 
     return PlayerState(
-      profiles: profilesResult.fold((_) => [], (p) => p),
-      activeProfile: activeResult.fold((_) => null, (p) => p),
+      profiles: profilesResult.fold((e) => _track(e), (p) => p),
+      activeProfile: activeResult.fold((e) => _track(e), (p) => p),
     );
   }
 
   Future<void> addProfile(String name) async {
-    final profile = PlayerProfile(name: name.trim());
-    await ref.read(playerProfileRepositoryProvider).addProfile(profile);
-    ref.invalidateSelf();
+    final result = await ref
+        .read(playerProfileRepositoryProvider)
+        .addProfile(PlayerProfile(name: name.trim()));
+    result.fold((e) => throw _track(e), (_) => ref.invalidateSelf());
   }
 
   Future<void> removeProfile(String name) async {
-    await ref.read(playerProfileRepositoryProvider).removeProfile(name);
-    ref.invalidateSelf();
+    final result = await ref
+        .read(playerProfileRepositoryProvider)
+        .removeProfile(name);
+    result.fold((e) => throw _track(e), (_) => ref.invalidateSelf());
   }
 
   Future<void> setActiveProfile(PlayerProfile profile) async {
-    await ref.read(playerProfileRepositoryProvider).setActiveProfile(profile);
-    ref.invalidateSelf();
+    final result = await ref
+        .read(playerProfileRepositoryProvider)
+        .setActiveProfile(profile);
+    result.fold((e) => throw _track(e), (_) => ref.invalidateSelf());
+  }
+
+  /// Forwards [e] to the error tracking service and rethrows it.
+  Never _track(Exception e) {
+    ref.read(errorTrackingServiceProvider).captureException(e);
+    throw e;
   }
 }
