@@ -44,6 +44,14 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# build_runner — fichiers générés (Riverpod, Freezed, AutoRoute, Drift, JSON)
+**/*.g.dart
+**/*.freezed.dart
+**/*.gr.dart
+
+# gen-l10n — fichiers générés de localisation
+lib/l10n/
+
 # SonarQube / SonarCloud — cache local du scanner
 .scannerwork/
 # Ne jamais committer un token Sonar en clair
