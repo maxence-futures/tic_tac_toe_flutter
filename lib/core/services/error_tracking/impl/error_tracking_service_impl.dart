@@ -1,6 +1,6 @@
 import 'dart:developer' as dev;
 
-import '../error_tracking_service.dart';
+import 'package:tic_tac_toe_flutter/core/services/error_tracking/error_tracking_service.dart';
 
 /// Stub implementation of [ErrorTrackingService].
 ///

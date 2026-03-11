@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'app.dart';
-import 'core/utils/logger/ttt_provider_observer.dart';
+import 'package:tic_tac_toe_flutter/app.dart';
+import 'package:tic_tac_toe_flutter/core/utils/logger/ttt_provider_observer.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

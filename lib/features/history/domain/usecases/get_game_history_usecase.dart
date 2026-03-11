@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
-import '../entities/game_record.dart';
-import '../repositories/history_repository.dart';
+import 'package:tic_tac_toe_flutter/features/history/domain/entities/game_record.dart';
+import 'package:tic_tac_toe_flutter/features/history/domain/repositories/history_repository.dart';
 
 final class GetGameHistoryUsecase {
   const GetGameHistoryUsecase(this._repository);

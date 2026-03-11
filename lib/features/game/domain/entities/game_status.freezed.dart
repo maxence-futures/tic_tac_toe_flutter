@@ -85,10 +85,7 @@ switch (_that) {
 case GameStatusPlaying():
 return playing(_that);case GameStatusWon():
 return won(_that);case GameStatusDraw():
-return draw(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
+return draw(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -153,10 +150,7 @@ switch (_that) {
 case GameStatusPlaying():
 return playing();case GameStatusWon():
 return won(_that.winner);case GameStatusDraw():
-return draw();case _:
-  throw StateError('Unexpected subclass');
-
-}
+return draw();}
 }
 /// A variant of `when` that fallback to returning `null`
 ///

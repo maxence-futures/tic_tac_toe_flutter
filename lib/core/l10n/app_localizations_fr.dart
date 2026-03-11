@@ -107,6 +107,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get historyMoves => 'coups';
 
   @override
+  String get historyClearTooltip => 'Vider l\'historique';
+
+  @override
+  String get historyClearDialogTitle => 'Vider l\'historique ?';
+
+  @override
+  String get historyClearDialogBody =>
+      'Toutes les parties seront supprimées définitivement.';
+
+  @override
+  String get historyClearConfirm => 'Vider';
+
+  @override
   String get replayTitle => 'Déroulé de la partie';
 
   @override

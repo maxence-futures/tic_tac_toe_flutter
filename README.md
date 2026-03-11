@@ -22,11 +22,11 @@ The project serves as a reference implementation showcasing state management wit
 ## Features
 
 | Feature | Description |
-|---|---|
+| --- | --- |
 | **Player profiles** | Create and switch between multiple player profiles, persisted via SharedPreferences |
 | **Difficulty levels** | Easy / Medium / Hard CPU opponent powered by a Minimax algorithm |
 | **Game board** | Animated 3×3 board with winning line highlight |
-| **Game history** | Browse all past games, sorted by date |
+| **Game history** | Browse all past games, sorted by date — with a confirmation-gated "clear all" action |
 | **Move replay** | Step-by-step replay of any recorded game |
 | **Internationalization** | French 🇫🇷 and English 🇬🇧 supported |
 
@@ -36,38 +36,57 @@ The project serves as a reference implementation showcasing state management wit
 
 The project follows **Clean Architecture** with a strict feature-first folder structure.
 
-```
+```text
 lib/
-├── core/            # Shared infrastructure (theme, router, DB, services, extensions, widgets)
-│   ├── database/
-│   ├── extensions/
-│   ├── l10n/        # ARB files (i18n)
-│   ├── router/
-│   ├── services/    # SharedPreferences, ErrorTracking (interface + impl)
-│   ├── theme/
-│   └── ui/widgets/  # Mutualized UI components (TttBoardWidget, DifficultyBadge…)
+├── core/                    # Shared infrastructure
+│   ├── database/            # Drift database + models
+│   ├── domain/
+│   │   └── game_rules/      # BoardRules — pure, shared game logic (win detection)
+│   ├── extensions/          # BuildContext extensions (theme, l10n, etc.)
+│   ├── l10n/                # ARB files (i18n source of truth)
+│   ├── router/              # AutoRoute configuration
+│   ├── services/            # SharedPreferences, ErrorTracking (interface + impl)
+│   ├── utils/               # TttProviderObserver (Riverpod logger)
+│   └── ui/
+│       ├── theme/           # AppColors, AppSpacing, AppTypography, AppDurations
+│       └── widgets/         # Shared widgets: TttBoardWidget, DifficultyBadge…
 └── features/
     ├── game/
-    │   ├── data/        # Drift model + repository impl
-    │   ├── domain/      # Entities (Freezed), repository interfaces, use cases
-    │   └── presentation/ # Riverpod notifiers, pages, widgets
+    │   ├── data/            # Drift repository impl
+    │   ├── domain/          # Entities (Freezed), repository interfaces, use cases
+    │   │                    # GameState carries canPlayerMove / withMove / evaluate
+    │   └── presentation/    # GameNotifier, pages, widgets
     ├── history/
     │   ├── data/
     │   ├── domain/
-    │   └── presentation/
+    │   └── presentation/    # HistoryNotifier, GameReplayNotifier
     ├── home/
     └── player/
 ```
 
-Each feature respects the **dependency rule**: presentation → domain ← data.  
-Repository interfaces live in `domain/`, concrete implementations in `data/`.
+### Dependency rule
+
+`presentation` → `domain` ← `data`
+
+Repository interfaces live in `domain/`, concrete implementations in `data/`.  
+Pure game rules that are shared across features (`BoardRules`) live in `core/domain/` to avoid cross-feature imports.
+
+### Domain logic on entities
+
+State transitions that depend only on `GameState` are extension methods on the entity itself, keeping the notifier as an orchestrator only:
+
+| Method | Responsibility |
+| --- | --- |
+| `GameState.canPlayerMove(int)` | Guard: is the human allowed to play here? |
+| `GameState.withMove(int, String)` | Pure state transition: apply a move |
+| `GameState.evaluate()` | Determine won / draw / still playing |
 
 ---
 
 ## Tech stack
 
 | Concern | Package |
-|---|---|
+| --- | --- |
 | State management | `flutter_riverpod` + `riverpod_generator` |
 | Navigation | `auto_route` + `auto_route_generator` |
 | Local DB | `drift` + `drift_flutter` |
@@ -76,6 +95,7 @@ Repository interfaces live in `domain/`, concrete implementations in `data/`.
 | Functional error handling | `dartz` (`Either<Exception, T>`) |
 | Animations | `flutter_animate` |
 | i18n | `flutter_localizations` + `intl` + `gen-l10n` |
+| Testing | `flutter_test` + `mockito` |
 
 ---
 
@@ -129,9 +149,26 @@ make coverage
 ```
 
 The `make coverage` target runs `scripts/coverage.sh`, which:
+
 1. Executes `flutter test --coverage`
 2. Strips generated files from `coverage/lcov.info` with `lcov --remove`
 3. Optionally opens an HTML report in your browser (requires `brew install lcov`)
+
+### Test coverage
+
+| Area | Test file |
+| --- | --- |
+| Database schema | `test/core/database/app_database_test.dart` |
+| SharedPreferences service | `test/core/services/shared_preferences/shared_preferences_service_test.dart` |
+| Error tracking service | `test/core/services/error_tracking/error_tracking_service_test.dart` |
+| GetCpuMoveUsecase (Minimax) | `test/features/game/domain/usecases/get_cpu_move_usecase_test.dart` |
+| SaveGameUsecase | `test/features/game/domain/usecases/save_game_usecase_test.dart` |
+| GameNotifier | `test/features/game/presentation/providers/game_notifier_test.dart` |
+| GetGameHistoryUsecase | `test/features/history/domain/usecases/get_game_history_usecase_test.dart` |
+| GameReplayNotifier | `test/features/history/presentation/providers/game_replay_notifier_test.dart` |
+| PlayerProfileRepositoryImpl | `test/features/player/data/repositories/player_profile_repository_impl_test.dart` |
+
+The Minimax (`hard` difficulty) is tested with a **"never loses"** property test: 100 games are simulated against a random opponent and O must never lose.
 
 ---
 
@@ -165,7 +202,7 @@ make sonar
 
 The workflow defined in [`.github/workflows/sonar.yml`](.github/workflows/sonar.yml) runs on every push and pull request targeting `main` or `develop`.
 
-```
+```text
 push / PR
     │
     ▼
@@ -187,7 +224,7 @@ push / PR
 
 ## Project structure
 
-```
+```text
 .
 ├── .github/
 │   └── workflows/
@@ -196,6 +233,9 @@ push / PR
 │   ├── app.dart
 │   ├── main.dart
 │   ├── core/
+│   │   ├── domain/game_rules/ # BoardRules (shared win-detection logic)
+│   │   ├── services/          # ErrorTracking + SharedPreferences (interface + impl)
+│   │   └── ui/theme/          # AppColors, AppSpacing, AppTypography, AppDurations
 │   └── features/
 ├── test/
 │   ├── core/

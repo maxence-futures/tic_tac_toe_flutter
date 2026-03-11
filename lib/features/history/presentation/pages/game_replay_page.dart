@@ -2,14 +2,15 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tic_tac_toe_flutter/core/extensions/build_context_extension.dart';
+import 'package:tic_tac_toe_flutter/core/ui/theme/app_colors.dart';
+import 'package:tic_tac_toe_flutter/core/ui/theme/app_durations.dart';
+import 'package:tic_tac_toe_flutter/core/ui/theme/app_spacing.dart';
 import 'package:tic_tac_toe_flutter/core/ui/widgets/difficulty_badge.dart';
-
-import '../../../../core/extensions/build_context_extension.dart';
-import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/ui/widgets/ttt_board_widget.dart';
-import '../../../game/domain/entities/game_move.dart';
-import '../../domain/entities/game_record.dart';
-import '../providers/game_replay_notifier.dart';
+import 'package:tic_tac_toe_flutter/core/ui/widgets/ttt_board_widget.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/game_move.dart';
+import 'package:tic_tac_toe_flutter/features/history/domain/entities/game_record.dart';
+import 'package:tic_tac_toe_flutter/features/history/presentation/providers/game_replay_notifier.dart';
 
 @RoutePage()
 class GameReplayPage extends ConsumerWidget {
@@ -21,7 +22,8 @@ class GameReplayPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final step = ref.watch(gameReplayProvider(record.id));
     final notifier = ref.read(gameReplayProvider(record.id).notifier);
-    final board = GameReplayNotifier.boardAt(record.moves, step);
+    final board = notifier.boardAt(record.moves, step);
+    final winningPositions = notifier.winningPositionsAt(record.moves, step);
     final colors = context.appColors;
     final totalMoves = record.moves.length;
 
@@ -35,6 +37,9 @@ class GameReplayPage extends ConsumerWidget {
       backgroundColor: colors.background,
       appBar: AppBar(
         title: Text(context.locals.replayTitle),
+        titleTextStyle: context.textTheme.titleMedium?.copyWith(
+          color: colors.text,
+        ),
         backgroundColor: colors.background,
         elevation: AppSpacing.elevationNone,
       ),
@@ -71,6 +76,7 @@ class GameReplayPage extends ConsumerWidget {
                             primaryColor: colors.primary,
                             secondaryColor: colors.secondary,
                             borderColor: colors.border,
+                            winningPositions: winningPositions,
                             lastMovePosition: step > 0
                                 ? record.moves[step - 1].position
                                 : null,
@@ -238,7 +244,7 @@ class _StepCounter extends StatelessWidget {
     final colors = context.appColors;
 
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 200),
+      duration: context.durations.fast,
       child: Text(
         step == 0
             ? context.locals.replayInitial
@@ -360,7 +366,7 @@ class _MoveTimelineState extends State<_MoveTimeline> {
     );
     _controller.animateTo(
       target,
-      duration: const Duration(milliseconds: 350),
+      duration: const AppDurations().slow,
       curve: Curves.easeOut,
     );
   }
@@ -390,90 +396,120 @@ class _MoveTimelineState extends State<_MoveTimeline> {
           child: ListView.separated(
             controller: _controller,
             itemCount: widget.moves.length,
-            separatorBuilder: (_, __) =>
+            separatorBuilder: (_, _) =>
                 const SizedBox(height: _kSeparatorHeight),
-            itemBuilder: (_, index) {
-              final move = widget.moves[index];
-              final isPlayed = index < widget.currentStep;
-              final isCurrent = index == widget.currentStep - 1;
-              final color = move.symbol == 'X'
-                  ? widget.primaryColor
-                  : widget.secondaryColor;
-
-              return SizedBox(
-                height: _kItemHeight,
-                child: GestureDetector(
-                  onTap: () => widget.onTap(index),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isCurrent
-                          ? color.withValues(alpha: 0.12)
-                          : isPlayed
-                          ? colors.surface
-                          : Colors.transparent,
-                      border: Border.all(
-                        color: isCurrent
-                            ? color
-                            : isPlayed
-                            ? colors.border
-                            : Colors.transparent,
-                      ),
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(AppSpacing.radiusMd),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          '${index + 1}.',
-                          style: context.textTheme.labelMedium?.copyWith(
-                            color: colors.textSubtle,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          move.symbol,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: color,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          move.isCpu ? 'CPU' : 'Joueur',
-                          style: context.textTheme.bodySmall?.copyWith(
-                            color: colors.text,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          'Case ${move.position + 1}',
-                          style: context.textTheme.labelSmall?.copyWith(
-                            color: colors.textSubtle,
-                          ),
-                        ),
-                        if (isCurrent) ...[
-                          const SizedBox(width: AppSpacing.xs),
-                          Icon(
-                            Icons.arrow_left_rounded,
-                            color: color,
-                            size: 18,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
+            itemBuilder: (_, index) => _TimelineItem(
+              move: widget.moves[index],
+              index: index,
+              currentStep: widget.currentStep,
+              primaryColor: widget.primaryColor,
+              secondaryColor: widget.secondaryColor,
+              onTap: widget.onTap,
+              itemHeight: _kItemHeight,
+            ),
           ),
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Timeline item
+// ---------------------------------------------------------------------------
+
+class _TimelineItem extends StatelessWidget {
+  const _TimelineItem({
+    required this.move,
+    required this.index,
+    required this.currentStep,
+    required this.primaryColor,
+    required this.secondaryColor,
+    required this.onTap,
+    required this.itemHeight,
+  });
+
+  final GameMove move;
+  final int index;
+  final int currentStep;
+  final Color primaryColor;
+  final Color secondaryColor;
+  final void Function(int index) onTap;
+  final double itemHeight;
+
+  Color _symbolColor() => move.symbol == 'X' ? primaryColor : secondaryColor;
+
+  Color _bgColor(AppColorsTheme colors, Color symbolColor) {
+    if (index == currentStep - 1) return symbolColor.withValues(alpha: 0.12);
+    if (index < currentStep) return colors.surface;
+    return Colors.transparent;
+  }
+
+  Color _borderColor(AppColorsTheme colors, Color symbolColor) {
+    if (index == currentStep - 1) return symbolColor;
+    if (index < currentStep) return colors.border;
+    return Colors.transparent;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final color = _symbolColor();
+    final isCurrent = index == currentStep - 1;
+
+    return SizedBox(
+      height: itemHeight,
+      child: GestureDetector(
+        onTap: () => onTap(index),
+        child: AnimatedContainer(
+          duration: context.durations.fast,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          decoration: BoxDecoration(
+            color: _bgColor(colors, color),
+            border: Border.all(color: _borderColor(colors, color)),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(AppSpacing.radiusMd),
+            ),
+          ),
+          child: Row(
+            children: [
+              Text(
+                '${index + 1}.',
+                style: context.textTheme.labelMedium?.copyWith(
+                  color: colors.textSubtle,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                move.symbol,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                move.isCpu ? 'CPU' : 'Joueur',
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: colors.text,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'Case ${move.position + 1}',
+                style: context.textTheme.labelSmall?.copyWith(
+                  color: colors.textSubtle,
+                ),
+              ),
+              if (isCurrent) ...[
+                const SizedBox(width: AppSpacing.xs),
+                Icon(Icons.arrow_left_rounded, color: color, size: 18),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

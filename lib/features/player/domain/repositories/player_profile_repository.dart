@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
 
-import '../entities/player_profile.dart';
+import 'package:tic_tac_toe_flutter/features/player/domain/entities/player_profile.dart';
 
+/// Repository for managing player profiles.
 abstract interface class PlayerProfileRepository {
   Future<Either<Exception, List<PlayerProfile>>> getProfiles();
   Future<Either<Exception, Unit>> addProfile(PlayerProfile profile);

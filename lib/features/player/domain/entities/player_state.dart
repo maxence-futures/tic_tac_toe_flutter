@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-
-import 'player_profile.dart';
+import 'package:tic_tac_toe_flutter/features/player/domain/entities/player_profile.dart';
 
 part 'player_state.freezed.dart';
 

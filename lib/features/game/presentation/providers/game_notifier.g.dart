@@ -50,6 +50,95 @@ final class GameRepositoryProvider
 
 String _$gameRepositoryHash() => r'd41a05eb68650785071defc32640dd1922cb9508';
 
+@ProviderFor(getCpuMoveUsecase)
+final getCpuMoveUsecaseProvider = GetCpuMoveUsecaseProvider._();
+
+final class GetCpuMoveUsecaseProvider
+    extends
+        $FunctionalProvider<
+          GetCpuMoveUsecase,
+          GetCpuMoveUsecase,
+          GetCpuMoveUsecase
+        >
+    with $Provider<GetCpuMoveUsecase> {
+  GetCpuMoveUsecaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'getCpuMoveUsecaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$getCpuMoveUsecaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<GetCpuMoveUsecase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  GetCpuMoveUsecase create(Ref ref) {
+    return getCpuMoveUsecase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(GetCpuMoveUsecase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<GetCpuMoveUsecase>(value),
+    );
+  }
+}
+
+String _$getCpuMoveUsecaseHash() => r'4010cb31d1ddfcd0402789cbaf27148d80048b9a';
+
+@ProviderFor(saveGameUsecase)
+final saveGameUsecaseProvider = SaveGameUsecaseProvider._();
+
+final class SaveGameUsecaseProvider
+    extends
+        $FunctionalProvider<SaveGameUsecase, SaveGameUsecase, SaveGameUsecase>
+    with $Provider<SaveGameUsecase> {
+  SaveGameUsecaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'saveGameUsecaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$saveGameUsecaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<SaveGameUsecase> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  SaveGameUsecase create(Ref ref) {
+    return saveGameUsecase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SaveGameUsecase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SaveGameUsecase>(value),
+    );
+  }
+}
+
+String _$saveGameUsecaseHash() => r'6a746544ece7df1e22616dc3ffd250103d5e9777';
+
 @ProviderFor(GameNotifier)
 final gameProvider = GameNotifierFamily._();
 
@@ -99,7 +188,7 @@ final class GameNotifierProvider
   }
 }
 
-String _$gameNotifierHash() => r'9dfae7524afb5a93d78897e58232555bc76d6eb2';
+String _$gameNotifierHash() => r'fb171ff8c18e656d78d1a755e9047d03ec03bc81';
 
 final class GameNotifierFamily extends $Family
     with

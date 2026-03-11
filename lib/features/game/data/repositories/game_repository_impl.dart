@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/database/app_database.dart';
-import '../../domain/entities/difficulty.dart';
-import '../../domain/entities/game_move.dart';
-import '../../domain/repositories/game_repository.dart';
+import 'package:tic_tac_toe_flutter/core/database/app_database.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/difficulty.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/game_move.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/repositories/game_repository.dart';
 
 final class GameRepositoryImpl implements GameRepository {
   const GameRepositoryImpl(this._db);

@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-
-import '../../../game/domain/entities/difficulty.dart';
-import '../../../game/domain/entities/game_move.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/difficulty.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/game_move.dart';
 
 part 'game_record.freezed.dart';
 

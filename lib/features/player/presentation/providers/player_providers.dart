@@ -1,10 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../../core/services/providers/services_providers.dart';
-import '../../data/repositories/player_profile_repository_impl.dart';
-import '../../domain/entities/player_profile.dart';
-import '../../domain/entities/player_state.dart';
-import '../../domain/repositories/player_profile_repository.dart';
+import 'package:tic_tac_toe_flutter/core/services/providers/services_providers.dart';
+import 'package:tic_tac_toe_flutter/features/player/data/repositories/player_profile_repository_impl.dart';
+import 'package:tic_tac_toe_flutter/features/player/domain/entities/player_profile.dart';
+import 'package:tic_tac_toe_flutter/features/player/domain/entities/player_state.dart';
+import 'package:tic_tac_toe_flutter/features/player/domain/repositories/player_profile_repository.dart';
 
 part 'player_providers.g.dart';
 
@@ -24,24 +23,45 @@ class PlayerNotifier extends _$PlayerNotifier {
     final activeResult = await repo.getActiveProfile();
 
     return PlayerState(
-      profiles: profilesResult.fold((_) => [], (p) => p),
-      activeProfile: activeResult.fold((_) => null, (p) => p),
+      profiles: profilesResult.fold((e) {
+        ref.read(errorTrackingServiceProvider).captureException(e);
+        throw e;
+      }, (p) => p),
+      activeProfile: activeResult.fold((e) {
+        ref.read(errorTrackingServiceProvider).captureException(e);
+        throw e;
+      }, (p) => p),
     );
   }
 
   Future<void> addProfile(String name) async {
     final profile = PlayerProfile(name: name.trim());
-    await ref.read(playerProfileRepositoryProvider).addProfile(profile);
-    ref.invalidateSelf();
+    final result = await ref
+        .read(playerProfileRepositoryProvider)
+        .addProfile(profile);
+    result.fold((e) {
+      ref.read(errorTrackingServiceProvider).captureException(e);
+      throw e;
+    }, (_) => ref.invalidateSelf());
   }
 
   Future<void> removeProfile(String name) async {
-    await ref.read(playerProfileRepositoryProvider).removeProfile(name);
-    ref.invalidateSelf();
+    final result = await ref
+        .read(playerProfileRepositoryProvider)
+        .removeProfile(name);
+    result.fold((e) {
+      ref.read(errorTrackingServiceProvider).captureException(e);
+      throw e;
+    }, (_) => ref.invalidateSelf());
   }
 
   Future<void> setActiveProfile(PlayerProfile profile) async {
-    await ref.read(playerProfileRepositoryProvider).setActiveProfile(profile);
-    ref.invalidateSelf();
+    final result = await ref
+        .read(playerProfileRepositoryProvider)
+        .setActiveProfile(profile);
+    result.fold((e) {
+      ref.read(errorTrackingServiceProvider).captureException(e);
+      throw e;
+    }, (_) => ref.invalidateSelf());
   }
 }

@@ -290,6 +290,30 @@ abstract class AppLocalizations {
   /// **'coups'**
   String get historyMoves;
 
+  /// Tooltip bouton vider l'historique
+  ///
+  /// In fr, this message translates to:
+  /// **'Vider l\'historique'**
+  String get historyClearTooltip;
+
+  /// Titre dialog confirmation suppression totale
+  ///
+  /// In fr, this message translates to:
+  /// **'Vider l\'historique ?'**
+  String get historyClearDialogTitle;
+
+  /// Corps dialog confirmation suppression totale
+  ///
+  /// In fr, this message translates to:
+  /// **'Toutes les parties seront supprimées définitivement.'**
+  String get historyClearDialogBody;
+
+  /// Bouton confirmation suppression totale
+  ///
+  /// In fr, this message translates to:
+  /// **'Vider'**
+  String get historyClearConfirm;
+
   /// Titre de la page replay
   ///
   /// In fr, this message translates to:

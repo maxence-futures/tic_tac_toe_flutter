@@ -1,24 +1,18 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 import 'package:tic_tac_toe_flutter/features/game/domain/entities/difficulty.dart';
 import 'package:tic_tac_toe_flutter/features/history/domain/entities/game_record.dart';
 import 'package:tic_tac_toe_flutter/features/history/domain/repositories/history_repository.dart';
 import 'package:tic_tac_toe_flutter/features/history/domain/usecases/get_game_history_usecase.dart';
 
-// Minimal in-memory stub — no third-party mock library needed.
-final class _FakeHistoryRepository implements HistoryRepository {
-  _FakeHistoryRepository(this._records);
+import 'get_game_history_usecase_test.mocks.dart';
 
-  final Either<Exception, List<GameRecord>> _records;
-
-  @override
-  Future<Either<Exception, List<GameRecord>>> getHistory() async => _records;
-
-  @override
-  Future<Either<Exception, Unit>> deleteGame(int id) async => const Right(unit);
-}
-
+@GenerateMocks([HistoryRepository])
 void main() {
+  late MockHistoryRepository mockRepo;
+
   final sampleRecord = GameRecord(
     id: 1,
     playerName: 'Alice',
@@ -28,43 +22,47 @@ void main() {
     playedAt: DateTime(2025, 1, 1),
   );
 
+  setUp(() {
+    mockRepo = MockHistoryRepository();
+  });
+
   group('GetGameHistoryUsecase', () {
     test('returns list on success', () async {
-      final usecase = GetGameHistoryUsecase(
-        _FakeHistoryRepository(Right([sampleRecord])),
-      );
+      when(
+        mockRepo.getHistory(),
+      ).thenAnswer((_) async => Right([sampleRecord]));
 
-      final result = await usecase();
+      final result = await GetGameHistoryUsecase(mockRepo)();
 
       expect(result.isRight(), isTrue);
       result.fold((_) => fail('Expected Right'), (records) {
         expect(records.length, 1);
         expect(records.first.playerName, 'Alice');
       });
+      verify(mockRepo.getHistory()).called(1);
     });
 
     test('propagates exception on failure', () async {
-      final exception = Exception('DB error');
-      final usecase = GetGameHistoryUsecase(
-        _FakeHistoryRepository(Left(exception)),
-      );
+      when(
+        mockRepo.getHistory(),
+      ).thenAnswer((_) async => Left(Exception('DB error')));
 
-      final result = await usecase();
+      final result = await GetGameHistoryUsecase(mockRepo)();
 
       expect(result.isLeft(), isTrue);
+      verify(mockRepo.getHistory()).called(1);
     });
 
     test('returns empty list when history is empty', () async {
-      final usecase = GetGameHistoryUsecase(
-        _FakeHistoryRepository(const Right([])),
-      );
+      when(mockRepo.getHistory()).thenAnswer((_) async => const Right([]));
 
-      final result = await usecase();
+      final result = await GetGameHistoryUsecase(mockRepo)();
 
       result.fold(
         (_) => fail('Expected Right'),
         (records) => expect(records, isEmpty),
       );
+      verify(mockRepo.getHistory()).called(1);
     });
   });
 }

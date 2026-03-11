@@ -107,6 +107,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyMoves => 'moves';
 
   @override
+  String get historyClearTooltip => 'Clear history';
+
+  @override
+  String get historyClearDialogTitle => 'Clear history?';
+
+  @override
+  String get historyClearDialogBody => 'All games will be permanently deleted.';
+
+  @override
+  String get historyClearConfirm => 'Clear';
+
+  @override
   String get replayTitle => 'Game replay';
 
   @override

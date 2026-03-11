@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$GameState {
 
- List<String?> get board; String get currentSymbol; GameStatus get status; List<GameMove> get moves; Difficulty get difficulty; String get playerName; bool get isCpuThinking; List<int> get winningPositions;
+ List<String?> get board; String get currentSymbol; GameStatus get gameStatus; List<GameMove> get moves; Difficulty get difficulty; String get playerName; bool get isCpuThinking; List<int> get winningPositions;
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $GameStateCopyWith<GameState> get copyWith => _$GameStateCopyWithImpl<GameState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GameState&&const DeepCollectionEquality().equals(other.board, board)&&(identical(other.currentSymbol, currentSymbol) || other.currentSymbol == currentSymbol)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other.moves, moves)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.playerName, playerName) || other.playerName == playerName)&&(identical(other.isCpuThinking, isCpuThinking) || other.isCpuThinking == isCpuThinking)&&const DeepCollectionEquality().equals(other.winningPositions, winningPositions));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GameState&&const DeepCollectionEquality().equals(other.board, board)&&(identical(other.currentSymbol, currentSymbol) || other.currentSymbol == currentSymbol)&&(identical(other.gameStatus, gameStatus) || other.gameStatus == gameStatus)&&const DeepCollectionEquality().equals(other.moves, moves)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.playerName, playerName) || other.playerName == playerName)&&(identical(other.isCpuThinking, isCpuThinking) || other.isCpuThinking == isCpuThinking)&&const DeepCollectionEquality().equals(other.winningPositions, winningPositions));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(board),currentSymbol,status,const DeepCollectionEquality().hash(moves),difficulty,playerName,isCpuThinking,const DeepCollectionEquality().hash(winningPositions));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(board),currentSymbol,gameStatus,const DeepCollectionEquality().hash(moves),difficulty,playerName,isCpuThinking,const DeepCollectionEquality().hash(winningPositions));
 
 @override
 String toString() {
-  return 'GameState(board: $board, currentSymbol: $currentSymbol, status: $status, moves: $moves, difficulty: $difficulty, playerName: $playerName, isCpuThinking: $isCpuThinking, winningPositions: $winningPositions)';
+  return 'GameState(board: $board, currentSymbol: $currentSymbol, gameStatus: $gameStatus, moves: $moves, difficulty: $difficulty, playerName: $playerName, isCpuThinking: $isCpuThinking, winningPositions: $winningPositions)';
 }
 
 
@@ -45,11 +45,11 @@ abstract mixin class $GameStateCopyWith<$Res>  {
   factory $GameStateCopyWith(GameState value, $Res Function(GameState) _then) = _$GameStateCopyWithImpl;
 @useResult
 $Res call({
- List<String?> board, String currentSymbol, GameStatus status, List<GameMove> moves, Difficulty difficulty, String playerName, bool isCpuThinking, List<int> winningPositions
+ List<String?> board, String currentSymbol, GameStatus gameStatus, List<GameMove> moves, Difficulty difficulty, String playerName, bool isCpuThinking, List<int> winningPositions
 });
 
 
-$GameStatusCopyWith<$Res> get status;
+$GameStatusCopyWith<$Res> get gameStatus;
 
 }
 /// @nodoc
@@ -62,11 +62,11 @@ class _$GameStateCopyWithImpl<$Res>
 
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? board = null,Object? currentSymbol = null,Object? status = null,Object? moves = null,Object? difficulty = null,Object? playerName = null,Object? isCpuThinking = null,Object? winningPositions = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? board = null,Object? currentSymbol = null,Object? gameStatus = null,Object? moves = null,Object? difficulty = null,Object? playerName = null,Object? isCpuThinking = null,Object? winningPositions = null,}) {
   return _then(_self.copyWith(
 board: null == board ? _self.board : board // ignore: cast_nullable_to_non_nullable
 as List<String?>,currentSymbol: null == currentSymbol ? _self.currentSymbol : currentSymbol // ignore: cast_nullable_to_non_nullable
-as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,gameStatus: null == gameStatus ? _self.gameStatus : gameStatus // ignore: cast_nullable_to_non_nullable
 as GameStatus,moves: null == moves ? _self.moves : moves // ignore: cast_nullable_to_non_nullable
 as List<GameMove>,difficulty: null == difficulty ? _self.difficulty : difficulty // ignore: cast_nullable_to_non_nullable
 as Difficulty,playerName: null == playerName ? _self.playerName : playerName // ignore: cast_nullable_to_non_nullable
@@ -79,10 +79,10 @@ as List<int>,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$GameStatusCopyWith<$Res> get status {
+$GameStatusCopyWith<$Res> get gameStatus {
   
-  return $GameStatusCopyWith<$Res>(_self.status, (value) {
-    return _then(_self.copyWith(status: value));
+  return $GameStatusCopyWith<$Res>(_self.gameStatus, (value) {
+    return _then(_self.copyWith(gameStatus: value));
   });
 }
 }
@@ -166,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String?> board,  String currentSymbol,  GameStatus status,  List<GameMove> moves,  Difficulty difficulty,  String playerName,  bool isCpuThinking,  List<int> winningPositions)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String?> board,  String currentSymbol,  GameStatus gameStatus,  List<GameMove> moves,  Difficulty difficulty,  String playerName,  bool isCpuThinking,  List<int> winningPositions)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GameState() when $default != null:
-return $default(_that.board,_that.currentSymbol,_that.status,_that.moves,_that.difficulty,_that.playerName,_that.isCpuThinking,_that.winningPositions);case _:
+return $default(_that.board,_that.currentSymbol,_that.gameStatus,_that.moves,_that.difficulty,_that.playerName,_that.isCpuThinking,_that.winningPositions);case _:
   return orElse();
 
 }
@@ -187,10 +187,10 @@ return $default(_that.board,_that.currentSymbol,_that.status,_that.moves,_that.d
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String?> board,  String currentSymbol,  GameStatus status,  List<GameMove> moves,  Difficulty difficulty,  String playerName,  bool isCpuThinking,  List<int> winningPositions)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String?> board,  String currentSymbol,  GameStatus gameStatus,  List<GameMove> moves,  Difficulty difficulty,  String playerName,  bool isCpuThinking,  List<int> winningPositions)  $default,) {final _that = this;
 switch (_that) {
 case _GameState():
-return $default(_that.board,_that.currentSymbol,_that.status,_that.moves,_that.difficulty,_that.playerName,_that.isCpuThinking,_that.winningPositions);case _:
+return $default(_that.board,_that.currentSymbol,_that.gameStatus,_that.moves,_that.difficulty,_that.playerName,_that.isCpuThinking,_that.winningPositions);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -207,10 +207,10 @@ return $default(_that.board,_that.currentSymbol,_that.status,_that.moves,_that.d
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String?> board,  String currentSymbol,  GameStatus status,  List<GameMove> moves,  Difficulty difficulty,  String playerName,  bool isCpuThinking,  List<int> winningPositions)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String?> board,  String currentSymbol,  GameStatus gameStatus,  List<GameMove> moves,  Difficulty difficulty,  String playerName,  bool isCpuThinking,  List<int> winningPositions)?  $default,) {final _that = this;
 switch (_that) {
 case _GameState() when $default != null:
-return $default(_that.board,_that.currentSymbol,_that.status,_that.moves,_that.difficulty,_that.playerName,_that.isCpuThinking,_that.winningPositions);case _:
+return $default(_that.board,_that.currentSymbol,_that.gameStatus,_that.moves,_that.difficulty,_that.playerName,_that.isCpuThinking,_that.winningPositions);case _:
   return null;
 
 }
@@ -222,7 +222,7 @@ return $default(_that.board,_that.currentSymbol,_that.status,_that.moves,_that.d
 
 
 class _GameState extends GameState {
-  const _GameState({required final  List<String?> board, required this.currentSymbol, required this.status, required final  List<GameMove> moves, required this.difficulty, required this.playerName, this.isCpuThinking = false, final  List<int> winningPositions = const []}): _board = board,_moves = moves,_winningPositions = winningPositions,super._();
+  const _GameState({required final  List<String?> board, required this.currentSymbol, required this.gameStatus, required final  List<GameMove> moves, required this.difficulty, required this.playerName, this.isCpuThinking = false, final  List<int> winningPositions = const []}): _board = board,_moves = moves,_winningPositions = winningPositions,super._();
   
 
  final  List<String?> _board;
@@ -233,7 +233,7 @@ class _GameState extends GameState {
 }
 
 @override final  String currentSymbol;
-@override final  GameStatus status;
+@override final  GameStatus gameStatus;
  final  List<GameMove> _moves;
 @override List<GameMove> get moves {
   if (_moves is EqualUnmodifiableListView) return _moves;
@@ -262,16 +262,16 @@ _$GameStateCopyWith<_GameState> get copyWith => __$GameStateCopyWithImpl<_GameSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GameState&&const DeepCollectionEquality().equals(other._board, _board)&&(identical(other.currentSymbol, currentSymbol) || other.currentSymbol == currentSymbol)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other._moves, _moves)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.playerName, playerName) || other.playerName == playerName)&&(identical(other.isCpuThinking, isCpuThinking) || other.isCpuThinking == isCpuThinking)&&const DeepCollectionEquality().equals(other._winningPositions, _winningPositions));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GameState&&const DeepCollectionEquality().equals(other._board, _board)&&(identical(other.currentSymbol, currentSymbol) || other.currentSymbol == currentSymbol)&&(identical(other.gameStatus, gameStatus) || other.gameStatus == gameStatus)&&const DeepCollectionEquality().equals(other._moves, _moves)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.playerName, playerName) || other.playerName == playerName)&&(identical(other.isCpuThinking, isCpuThinking) || other.isCpuThinking == isCpuThinking)&&const DeepCollectionEquality().equals(other._winningPositions, _winningPositions));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_board),currentSymbol,status,const DeepCollectionEquality().hash(_moves),difficulty,playerName,isCpuThinking,const DeepCollectionEquality().hash(_winningPositions));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_board),currentSymbol,gameStatus,const DeepCollectionEquality().hash(_moves),difficulty,playerName,isCpuThinking,const DeepCollectionEquality().hash(_winningPositions));
 
 @override
 String toString() {
-  return 'GameState(board: $board, currentSymbol: $currentSymbol, status: $status, moves: $moves, difficulty: $difficulty, playerName: $playerName, isCpuThinking: $isCpuThinking, winningPositions: $winningPositions)';
+  return 'GameState(board: $board, currentSymbol: $currentSymbol, gameStatus: $gameStatus, moves: $moves, difficulty: $difficulty, playerName: $playerName, isCpuThinking: $isCpuThinking, winningPositions: $winningPositions)';
 }
 
 
@@ -282,11 +282,11 @@ abstract mixin class _$GameStateCopyWith<$Res> implements $GameStateCopyWith<$Re
   factory _$GameStateCopyWith(_GameState value, $Res Function(_GameState) _then) = __$GameStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<String?> board, String currentSymbol, GameStatus status, List<GameMove> moves, Difficulty difficulty, String playerName, bool isCpuThinking, List<int> winningPositions
+ List<String?> board, String currentSymbol, GameStatus gameStatus, List<GameMove> moves, Difficulty difficulty, String playerName, bool isCpuThinking, List<int> winningPositions
 });
 
 
-@override $GameStatusCopyWith<$Res> get status;
+@override $GameStatusCopyWith<$Res> get gameStatus;
 
 }
 /// @nodoc
@@ -299,11 +299,11 @@ class __$GameStateCopyWithImpl<$Res>
 
 /// Create a copy of GameState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? board = null,Object? currentSymbol = null,Object? status = null,Object? moves = null,Object? difficulty = null,Object? playerName = null,Object? isCpuThinking = null,Object? winningPositions = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? board = null,Object? currentSymbol = null,Object? gameStatus = null,Object? moves = null,Object? difficulty = null,Object? playerName = null,Object? isCpuThinking = null,Object? winningPositions = null,}) {
   return _then(_GameState(
 board: null == board ? _self._board : board // ignore: cast_nullable_to_non_nullable
 as List<String?>,currentSymbol: null == currentSymbol ? _self.currentSymbol : currentSymbol // ignore: cast_nullable_to_non_nullable
-as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,gameStatus: null == gameStatus ? _self.gameStatus : gameStatus // ignore: cast_nullable_to_non_nullable
 as GameStatus,moves: null == moves ? _self._moves : moves // ignore: cast_nullable_to_non_nullable
 as List<GameMove>,difficulty: null == difficulty ? _self.difficulty : difficulty // ignore: cast_nullable_to_non_nullable
 as Difficulty,playerName: null == playerName ? _self.playerName : playerName // ignore: cast_nullable_to_non_nullable
@@ -317,10 +317,10 @@ as List<int>,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$GameStatusCopyWith<$Res> get status {
+$GameStatusCopyWith<$Res> get gameStatus {
   
-  return $GameStatusCopyWith<$Res>(_self.status, (value) {
-    return _then(_self.copyWith(status: value));
+  return $GameStatusCopyWith<$Res>(_self.gameStatus, (value) {
+    return _then(_self.copyWith(gameStatus: value));
   });
 }
 }

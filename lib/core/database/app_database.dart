@@ -1,8 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../features/game/data/models/game_record_model.dart';
+import 'package:tic_tac_toe_flutter/core/database/models/game_record_drift_model.dart';
 
 part 'app_database.g.dart';
 

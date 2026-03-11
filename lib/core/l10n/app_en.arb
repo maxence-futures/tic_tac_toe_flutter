@@ -1,18 +1,15 @@
 {
   "@@locale": "en",
-
   "appTitle": "Tic Tac Toe",
   "homeVersus": "vs",
   "homeStartGame": "Start a game",
   "homeHistory": "Game history",
-
   "playerSetupTitle": "Choose a profile",
   "playerSetupChooseProfile": "Select your profile",
   "playerSetupNewProfile": "New profile",
   "playerSetupNameHint": "Your name",
   "playerSetupContinue": "Continue",
   "playerSetupNoProfiles": "No profiles saved",
-
   "difficultyTitle": "Difficulty level",
   "difficultySubtitle": "Choose your opponent",
   "difficultyEasy": "Easy",
@@ -22,7 +19,6 @@
   "difficultyHard": "Hard",
   "difficultyHardDesc": "The CPU plays perfectly — unbeatable!",
   "difficultyStart": "Start game",
-
   "gameYourTurn": "Your turn",
   "gameCpuThinking": "CPU is thinking…",
   "gameYouWon": "You won!",
@@ -30,21 +26,27 @@
   "gameDraw": "It's a draw!",
   "gamePlayAgain": "Play again",
   "gameBackHome": "Back to home",
-
   "historyTitle": "Game history",
   "historyEmpty": "No games played yet",
   "historyResultWin": "Victory",
   "historyResultLoss": "Defeat",
   "historyResultDraw": "Draw",
   "historyMoves": "moves",
-
+  "historyClearTooltip": "Clear history",
+  "historyClearDialogTitle": "Clear history?",
+  "historyClearDialogBody": "All games will be permanently deleted.",
+  "historyClearConfirm": "Clear",
   "replayTitle": "Game replay",
   "replayInitial": "Empty board — press → to start",
   "replayStep": "Move {step} of {total}",
   "@replayStep": {
     "placeholders": {
-      "step": { "type": "int" },
-      "total": { "type": "int" }
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "replayTimeline": "Move timeline"
