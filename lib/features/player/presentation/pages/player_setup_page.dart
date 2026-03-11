@@ -2,14 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/extensions/build_context_extension.dart';
-import '../../../../core/router/app_router.dart';
-import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/ui/widgets/empty_state_widget.dart';
-import '../../../../core/ui/widgets/player_avatar.dart';
-import '../../domain/entities/player_profile.dart';
-import '../providers/player_providers.dart';
+import 'package:tic_tac_toe_flutter/core/extensions/build_context_extension.dart';
+import 'package:tic_tac_toe_flutter/core/router/app_router.dart';
+import 'package:tic_tac_toe_flutter/core/ui/theme/app_spacing.dart';
+import 'package:tic_tac_toe_flutter/core/ui/widgets/empty_state_widget.dart';
+import 'package:tic_tac_toe_flutter/core/ui/widgets/player_avatar.dart';
+import 'package:tic_tac_toe_flutter/features/player/domain/entities/player_profile.dart';
+import 'package:tic_tac_toe_flutter/features/player/presentation/providers/player_providers.dart';
 
 @RoutePage()
 class PlayerSetupPage extends ConsumerWidget {
@@ -23,6 +22,9 @@ class PlayerSetupPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(context.locals.playerSetupTitle),
+        titleTextStyle: context.textTheme.titleMedium?.copyWith(
+          color: colors.text,
+        ),
         backgroundColor: colors.background,
         elevation: AppSpacing.elevationNone,
       ),
@@ -32,7 +34,10 @@ class PlayerSetupPage extends ConsumerWidget {
           child: state.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(child: Text(e.toString())),
-            data: (playerState) => _Body(playerState: playerState),
+            data: (playerState) => _Body(
+              activePlayerProfile: playerState.activeProfile,
+              profiles: playerState.profiles,
+            ),
           ),
         ),
       ),
@@ -43,9 +48,10 @@ class PlayerSetupPage extends ConsumerWidget {
 // ---------------------------------------------------------------------------
 
 class _Body extends ConsumerStatefulWidget {
-  const _Body({required this.playerState});
+  const _Body({required this.activePlayerProfile, required this.profiles});
 
-  final dynamic playerState;
+  final PlayerProfile? activePlayerProfile;
+  final List<PlayerProfile> profiles;
 
   @override
   ConsumerState<_Body> createState() => _BodyState();
@@ -64,11 +70,9 @@ class _BodyState extends ConsumerState<_Body> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final state = ref.watch(playerProvider).value;
-    if (state == null) return const SizedBox.shrink();
 
-    final profiles = state.profiles;
-    final active = state.activeProfile;
+    final profiles = widget.profiles;
+    final active = widget.activePlayerProfile;
     final canContinue = active != null;
 
     return Column(
@@ -97,7 +101,7 @@ class _BodyState extends ConsumerState<_Body> {
                 )
               : ListView.separated(
                   itemCount: profiles.length,
-                  separatorBuilder: (_, __) =>
+                  separatorBuilder: (_, _) =>
                       const SizedBox(height: AppSpacing.sm),
                   itemBuilder: (context, index) {
                     final profile = profiles[index];
@@ -112,7 +116,7 @@ class _BodyState extends ConsumerState<_Body> {
                               .read(playerProvider.notifier)
                               .removeProfile(profile.name),
                         )
-                        .animate(delay: Duration(milliseconds: 80 * index))
+                        .animate(delay: context.durations.staggerStep * index)
                         .fadeIn(duration: 300.ms)
                         .slideX(begin: 0.2, curve: Curves.easeOut);
                   },
@@ -180,7 +184,7 @@ class _ProfileTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration: context.durations.fast,
       decoration: BoxDecoration(
         color: isSelected
             ? colors.primary.withValues(alpha: 0.1)

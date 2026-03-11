@@ -62,7 +62,7 @@ final class GameReplayNotifierProvider
 }
 
 String _$gameReplayNotifierHash() =>
-    r'1a329bcc18e9d43801f58b71cc6b06bfdaec1377';
+    r'021d1525c189a1a8286a53fc329280f63559af04';
 
 /// Tracks the current replay step (0 = empty board, N = after N moves).
 

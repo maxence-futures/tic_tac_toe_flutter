@@ -1,10 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../../core/database/app_database.dart';
-import '../../data/repositories/history_repository_impl.dart';
-import '../../domain/entities/game_record.dart';
-import '../../domain/repositories/history_repository.dart';
-import '../../domain/usecases/get_game_history_usecase.dart';
+import 'package:tic_tac_toe_flutter/core/database/app_database.dart';
+import 'package:tic_tac_toe_flutter/core/services/providers/services_providers.dart';
+import 'package:tic_tac_toe_flutter/features/history/data/repositories/history_repository_impl.dart';
+import 'package:tic_tac_toe_flutter/features/history/domain/entities/game_record.dart';
+import 'package:tic_tac_toe_flutter/features/history/domain/repositories/history_repository.dart';
+import 'package:tic_tac_toe_flutter/features/history/domain/usecases/get_game_history_usecase.dart';
 
 part 'history_providers.g.dart';
 
@@ -13,17 +13,36 @@ HistoryRepository historyRepository(Ref ref) {
   return HistoryRepositoryImpl(ref.watch(appDatabaseProvider));
 }
 
+@Riverpod(keepAlive: false)
+GetGameHistoryUsecase getGameHistoryUsecase(Ref ref) {
+  return GetGameHistoryUsecase(ref.watch(historyRepositoryProvider));
+}
+
 @riverpod
 class HistoryNotifier extends _$HistoryNotifier {
   @override
   Future<List<GameRecord>> build() async {
-    final usecase = GetGameHistoryUsecase(ref.watch(historyRepositoryProvider));
+    final usecase = ref.watch(getGameHistoryUsecaseProvider);
     final result = await usecase();
-    return result.fold((_) => [], (records) => records);
+    return result.fold((exception) {
+      ref.read(errorTrackingServiceProvider).captureException(exception);
+      throw exception;
+    }, (records) => records);
   }
 
   Future<void> deleteGame(int id) async {
-    await ref.read(historyRepositoryProvider).deleteGame(id);
-    ref.invalidateSelf();
+    final result = await ref.read(historyRepositoryProvider).deleteGame(id);
+    result.fold((exception) {
+      ref.read(errorTrackingServiceProvider).captureException(exception);
+      throw exception;
+    }, (_) => ref.invalidateSelf());
+  }
+
+  Future<void> clearHistory() async {
+    final result = await ref.read(historyRepositoryProvider).clearHistory();
+    result.fold((exception) {
+      ref.read(errorTrackingServiceProvider).captureException(exception);
+      throw exception;
+    }, (_) => ref.invalidateSelf());
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../features/game/domain/entities/difficulty.dart';
-import '../../extensions/build_context_extension.dart';
-import '../../theme/app_spacing.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/difficulty.dart';
+import 'package:tic_tac_toe_flutter/core/extensions/build_context_extension.dart';
+import 'package:tic_tac_toe_flutter/core/ui/theme/app_spacing.dart';
 
 /// A coloured pill badge displaying a [Difficulty] level.
 ///

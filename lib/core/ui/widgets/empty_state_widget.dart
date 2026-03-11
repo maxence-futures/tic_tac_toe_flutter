@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../extensions/build_context_extension.dart';
-import '../../theme/app_spacing.dart';
+import 'package:tic_tac_toe_flutter/core/extensions/build_context_extension.dart';
+import 'package:tic_tac_toe_flutter/core/ui/theme/app_spacing.dart';
 
 /// A centred icon + message widget for empty screens.
 ///

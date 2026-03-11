@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
-import '../../../../core/extensions/build_context_extension.dart';
-import '../../../../core/router/app_router.dart';
-import '../../../../core/theme/app_spacing.dart';
+import 'package:tic_tac_toe_flutter/core/extensions/build_context_extension.dart';
+import 'package:tic_tac_toe_flutter/core/router/app_router.dart';
+import 'package:tic_tac_toe_flutter/core/ui/theme/app_spacing.dart';
+import 'package:tic_tac_toe_flutter/core/ui/widgets/ttt_board_widget.dart';
 
 @RoutePage()
 class HomePage extends StatelessWidget {
@@ -104,59 +104,35 @@ class _Header extends StatelessWidget {
 class _MiniBoard extends StatelessWidget {
   const _MiniBoard();
 
-  static const _size = 200.0;
-  static const _cellSize = _size / 3;
+  static const List<String?> _board = [
+    'X',
+    null,
+    'O',
+    null,
+    'X',
+    null,
+    'O',
+    null,
+    'X',
+  ];
 
-  static const _preview = ['X', '', 'O', '', 'X', '', 'O', '', 'X'];
+  static const List<int> _winningPositions = [0, 4, 8];
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
     return SizedBox(
-          width: _size,
-          height: _size,
-          child: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-            ),
-            itemCount: 9,
-            itemBuilder: (_, index) {
-              final symbol = _preview[index];
-              final symbolColor = symbol == 'X'
-                  ? colors.primary
-                  : colors.secondary;
-
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: colors.border, width: 1.5),
-                ),
-                child: Center(
-                  child: symbol.isNotEmpty
-                      ? Text(
-                              symbol,
-                              style: TextStyle(
-                                fontSize: _cellSize * 0.55,
-                                fontWeight: FontWeight.w800,
-                                color: symbolColor,
-                              ),
-                            )
-                            .animate()
-                            .scale(
-                              begin: const Offset(0, 0),
-                              delay: Duration(milliseconds: 500 + index * 80),
-                              curve: Curves.elasticOut,
-                              duration: 600.ms,
-                            )
-                            .fadeIn(
-                              delay: Duration(milliseconds: 500 + index * 80),
-                              duration: 300.ms,
-                            )
-                      : null,
-                ),
-              );
-            },
+          width: 200,
+          height: 200,
+          child: TttBoardWidget(
+            board: _board,
+            fontSize: 32,
+            primaryColor: colors.primary,
+            secondaryColor: colors.secondary,
+            borderColor: colors.border,
+            winningPositions: _winningPositions,
+            winningColor: colors.primary,
           ),
         )
         .animate()
@@ -180,7 +156,9 @@ class _MenuSection extends StatelessWidget {
           label: context.locals.homeStartGame,
           icon: Icons.play_arrow_rounded,
           isPrimary: true,
-          delay: const Duration(milliseconds: 700),
+          delay:
+              context.durations.staggerOffset +
+              const Duration(milliseconds: 200),
           onTap: () => context.router.push(const PlayerSetupRoute()),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -188,7 +166,9 @@ class _MenuSection extends StatelessWidget {
           label: context.locals.homeHistory,
           icon: Icons.history_rounded,
           isPrimary: false,
-          delay: const Duration(milliseconds: 850),
+          delay:
+              context.durations.staggerOffset +
+              const Duration(milliseconds: 350),
           onTap: () => context.router.push(const HistoryRoute()),
         ),
       ],

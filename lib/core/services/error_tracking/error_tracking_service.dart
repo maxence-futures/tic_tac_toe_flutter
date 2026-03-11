@@ -18,7 +18,8 @@ abstract interface class ErrorTrackingService {
 
   /// Reports a structured [message] at the given severity [level].
   ///
-  /// Useful for non-exception events (e.g. "user reached rate limit").
+  /// Not yet called in the app — available for non-exception events
+  /// (e.g. "user reached rate limit", analytics checkpoints).
   Future<void> captureMessage(
     String message, {
     ErrorSeverity level = ErrorSeverity.info,
@@ -26,8 +27,8 @@ abstract interface class ErrorTrackingService {
 
   /// Attaches user identity to subsequent events.
   ///
-  /// Pass [null] for fields that are unavailable (e.g. anonymous user has
-  /// no [email]).
+  /// Not yet called in the app — useful once authentication is introduced
+  /// to correlate errors with specific users.
   Future<void> setUser({
     String? id,
     String? username,
@@ -35,12 +36,14 @@ abstract interface class ErrorTrackingService {
   });
 
   /// Removes any previously set user context.
+  ///
+  /// Not yet called in the app — pair with [setUser] on sign-out.
   Future<void> clearUser();
 
   /// Adds a breadcrumb to the current event scope.
   ///
-  /// Breadcrumbs are a chronological trail of events (navigation, network
-  /// calls, user actions) that help understand what led to an error.
+  /// Not yet called in the app — useful to trace navigation, network calls,
+  /// or user actions that led up to an error.
   Future<void> addBreadcrumb(
     String message, {
     String? category,

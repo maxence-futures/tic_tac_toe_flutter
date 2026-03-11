@@ -4,7 +4,7 @@ part 'game_status.freezed.dart';
 
 /// Represents the current outcome state of a game.
 @freezed
-abstract class GameStatus with _$GameStatus {
+sealed class GameStatus with _$GameStatus {
   /// The game is still in progress.
   const factory GameStatus.playing() = GameStatusPlaying;
 

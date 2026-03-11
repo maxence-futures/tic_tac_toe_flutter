@@ -3,15 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
-import '../../../../core/extensions/build_context_extension.dart';
-import '../../../../core/router/app_router.dart';
-import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/ui/widgets/difficulty_badge.dart';
-import '../../../../core/ui/widgets/empty_state_widget.dart';
-import '../../../../core/ui/widgets/player_avatar.dart';
-import '../../domain/entities/game_record.dart';
-import '../providers/history_providers.dart';
+import 'package:tic_tac_toe_flutter/core/extensions/build_context_extension.dart';
+import 'package:tic_tac_toe_flutter/core/router/app_router.dart';
+import 'package:tic_tac_toe_flutter/core/ui/theme/app_spacing.dart';
+import 'package:tic_tac_toe_flutter/core/ui/widgets/difficulty_badge.dart';
+import 'package:tic_tac_toe_flutter/core/ui/widgets/empty_state_widget.dart';
+import 'package:tic_tac_toe_flutter/core/ui/widgets/player_avatar.dart';
+import 'package:tic_tac_toe_flutter/features/history/domain/entities/game_record.dart';
+import 'package:tic_tac_toe_flutter/features/history/presentation/providers/history_providers.dart';
 
 @RoutePage()
 class HistoryPage extends ConsumerWidget {
@@ -26,8 +25,19 @@ class HistoryPage extends ConsumerWidget {
       backgroundColor: colors.background,
       appBar: AppBar(
         title: Text(context.locals.historyTitle),
+        titleTextStyle: context.textTheme.titleMedium?.copyWith(
+          color: colors.text,
+        ),
         backgroundColor: colors.background,
         elevation: AppSpacing.elevationNone,
+        actions: [
+          if (state.asData?.value.isNotEmpty ?? false)
+            IconButton(
+              tooltip: context.locals.historyClearTooltip,
+              icon: Icon(Icons.delete_sweep_outlined, color: colors.error),
+              onPressed: () => _confirmClearHistory(context, ref),
+            ),
+        ],
       ),
       body: state.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -41,8 +51,44 @@ class HistoryPage extends ConsumerWidget {
       ),
     );
   }
-}
 
+  Future<void> _confirmClearHistory(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final colors = ctx.appColors;
+        return AlertDialog(
+          backgroundColor: colors.surface,
+          title: Text(
+            ctx.locals.historyClearDialogTitle,
+            style: ctx.textTheme.titleMedium?.copyWith(color: colors.text),
+          ),
+          content: Text(
+            ctx.locals.historyClearDialogBody,
+            style: ctx.textTheme.bodyMedium?.copyWith(color: colors.textSubtle),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(
+                ctx.locals.historyClearConfirm,
+                style: TextStyle(color: colors.error),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed ?? false) {
+      await ref.read(historyProvider.notifier).clearHistory();
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Game list
@@ -71,7 +117,7 @@ class _GameList extends ConsumerWidget {
                         .read(historyProvider.notifier)
                         .deleteGame(record.id),
                   )
-                  .animate(delay: Duration(milliseconds: 60 * index))
+                  .animate(delay: context.durations.staggerStep * index)
                   .fadeIn(duration: 300.ms)
                   .slideY(begin: 0.15, curve: Curves.easeOut),
         );
@@ -226,4 +272,3 @@ class _GameCard extends StatelessWidget {
     return DateFormat('d MMM, HH:mm', 'fr').format(dt);
   }
 }
-

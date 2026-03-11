@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:drift/drift.dart';
 
-import '../../../../core/database/app_database.dart';
-import '../../../game/domain/entities/difficulty.dart';
-import '../../../game/domain/entities/game_move.dart';
-import '../../domain/entities/game_record.dart';
-import '../../domain/repositories/history_repository.dart';
+import 'package:tic_tac_toe_flutter/core/database/app_database.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/difficulty.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/game_move.dart';
+import 'package:tic_tac_toe_flutter/features/history/domain/entities/game_record.dart';
+import 'package:tic_tac_toe_flutter/features/history/domain/repositories/history_repository.dart';
 
 final class HistoryRepositoryImpl implements HistoryRepository {
   const HistoryRepositoryImpl(this._db);
@@ -35,6 +35,16 @@ final class HistoryRepositoryImpl implements HistoryRepository {
       return const Right(unit);
     } catch (e) {
       return Left(Exception('Failed to delete game: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, Unit>> clearHistory() async {
+    try {
+      await _db.delete(_db.gameRecordDriftModel).go();
+      return const Right(unit);
+    } catch (e) {
+      return Left(Exception('Failed to clear history: $e'));
     }
   }
 

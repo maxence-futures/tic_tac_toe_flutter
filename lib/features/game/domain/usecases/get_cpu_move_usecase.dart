@@ -1,6 +1,7 @@
 import 'dart:math';
 
-import '../entities/difficulty.dart';
+import 'package:tic_tac_toe_flutter/core/domain/game_rules/board_rules.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/difficulty.dart';
 
 /// Returns the index (0–8) of the CPU's next move given the current [board].
 ///
@@ -11,13 +12,7 @@ import '../entities/difficulty.dart';
 final class GetCpuMoveUsecase {
   const GetCpuMoveUsecase();
 
-  static const _winPatterns = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // cols
-    [0, 4, 8], [2, 4, 6],             // diagonals
-  ];
-
-  int call(List<String?> board, Difficulty difficulty) {
+  int call({required List<String?> board, required Difficulty difficulty}) {
     final empties = _emptyCells(board);
     if (empties.isEmpty) return -1;
 
@@ -87,18 +82,12 @@ final class GetCpuMoveUsecase {
       empties[_random.nextInt(empties.length)];
 
   List<int> _emptyCells(List<String?> board) => [
-        for (int i = 0; i < 9; i++)
-          if (board[i] == null) i,
-      ];
+    for (int i = 0; i < 9; i++)
+      if (board[i] == null) i,
+  ];
 
   String? _checkWinner(List<String?> board) {
-    for (final p in _winPatterns) {
-      if (board[p[0]] != null &&
-          board[p[0]] == board[p[1]] &&
-          board[p[1]] == board[p[2]]) {
-        return board[p[0]];
-      }
-    }
-    return null;
+    final line = BoardRules.findWinningLine(board);
+    return line != null ? board[line[0]] : null;
   }
 }

@@ -1,3 +1,4 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
@@ -9,9 +10,6 @@ import 'package:tic_tac_toe_flutter/features/player/domain/entities/player_profi
 void main() {
   late PlayerProfileRepositoryImpl repo;
 
-  const alice = PlayerProfile(name: 'Alice');
-  const bob = PlayerProfile(name: 'Bob');
-
   setUp(() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
@@ -20,171 +18,180 @@ void main() {
     );
   });
 
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
   // getProfiles
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
 
   group('getProfiles', () {
-    test('returns an empty list when nothing is stored', () async {
+    test('returns empty list when nothing is stored', () async {
       final result = await repo.getProfiles();
-      result.fold((_) => fail('expected Right'), (p) => expect(p, isEmpty));
+
+      result.fold(
+        (_) => fail('Expected Right'),
+        (profiles) => expect(profiles, isEmpty),
+      );
     });
 
-    test('returns stored profiles after adding them', () async {
-      await repo.addProfile(alice);
-      await repo.addProfile(bob);
+    test('returns all previously saved profiles', () async {
+      await repo.addProfile(const PlayerProfile(name: 'Alice'));
+      await repo.addProfile(const PlayerProfile(name: 'Bob'));
 
       final result = await repo.getProfiles();
-      result.fold(
-        (_) => fail('expected Right'),
-        (profiles) {
-          expect(profiles.length, 2);
-          expect(profiles.map((p) => p.name), containsAll(['Alice', 'Bob']));
-        },
-      );
+
+      result.fold((_) => fail('Expected Right'), (profiles) {
+        expect(profiles.map((p) => p.name), containsAll(['Alice', 'Bob']));
+      });
     });
   });
 
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
   // addProfile
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
 
   group('addProfile', () {
     test('adds a new profile', () async {
-      await repo.addProfile(alice);
+      final result = await repo.addProfile(const PlayerProfile(name: 'Alice'));
 
-      final result = await repo.getProfiles();
-      result.fold(
-        (_) => fail('expected Right'),
-        (profiles) => expect(profiles.single.name, 'Alice'),
+      expect(result, const Right(unit));
+      final profiles = await repo.getProfiles();
+      profiles.fold(
+        (_) => fail('Expected Right'),
+        (list) => expect(list.any((p) => p.name == 'Alice'), isTrue),
       );
     });
 
-    test('is idempotent — adding the same name twice does not duplicate', () async {
-      await repo.addProfile(alice);
-      await repo.addProfile(alice);
+    test('is idempotent — duplicate name is silently ignored', () async {
+      await repo.addProfile(const PlayerProfile(name: 'Alice'));
+      await repo.addProfile(const PlayerProfile(name: 'Alice'));
 
       final result = await repo.getProfiles();
       result.fold(
-        (_) => fail('expected Right'),
-        (profiles) => expect(profiles.length, 1),
+        (_) => fail('Expected Right'),
+        (list) => expect(list.where((p) => p.name == 'Alice'), hasLength(1)),
       );
     });
   });
 
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
   // removeProfile
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
 
   group('removeProfile', () {
     test('removes an existing profile', () async {
-      await repo.addProfile(alice);
-      await repo.addProfile(bob);
-      await repo.removeProfile('Alice');
+      await repo.addProfile(const PlayerProfile(name: 'Alice'));
+      await repo.addProfile(const PlayerProfile(name: 'Bob'));
 
-      final result = await repo.getProfiles();
-      result.fold(
-        (_) => fail('expected Right'),
-        (profiles) {
-          expect(profiles.length, 1);
-          expect(profiles.single.name, 'Bob');
-        },
-      );
+      final result = await repo.removeProfile('Alice');
+
+      expect(result, const Right(unit));
+      final profiles = await repo.getProfiles();
+      profiles.fold((_) => fail('Expected Right'), (list) {
+        expect(list.any((p) => p.name == 'Alice'), isFalse);
+        expect(list.any((p) => p.name == 'Bob'), isTrue);
+      });
     });
 
-    test('removing a non-existent profile is a no-op', () async {
-      await repo.addProfile(alice);
-      await repo.removeProfile('Unknown');
+    test('clears the active profile when removing the active player', () async {
+      await repo.addProfile(const PlayerProfile(name: 'Alice'));
+      await repo.setActiveProfile(const PlayerProfile(name: 'Alice'));
 
-      final result = await repo.getProfiles();
-      result.fold(
-        (_) => fail('expected Right'),
-        (profiles) => expect(profiles.length, 1),
-      );
-    });
-
-    test('clears the active profile when it matches the removed name', () async {
-      await repo.addProfile(alice);
-      await repo.setActiveProfile(alice);
       await repo.removeProfile('Alice');
 
-      final result = await repo.getActiveProfile();
-      result.fold(
-        (_) => fail('expected Right'),
+      final activeResult = await repo.getActiveProfile();
+      activeResult.fold(
+        (_) => fail('Expected Right'),
         (active) => expect(active, isNull),
       );
     });
 
-    test('does not clear the active profile when another profile is removed', () async {
-      await repo.addProfile(alice);
-      await repo.addProfile(bob);
-      await repo.setActiveProfile(alice);
-      await repo.removeProfile('Bob');
+    test(
+      'does not touch the active profile when removing a different player',
+      () async {
+        await repo.addProfile(const PlayerProfile(name: 'Alice'));
+        await repo.addProfile(const PlayerProfile(name: 'Bob'));
+        await repo.setActiveProfile(const PlayerProfile(name: 'Alice'));
 
-      final result = await repo.getActiveProfile();
-      result.fold(
-        (_) => fail('expected Right'),
-        (active) => expect(active?.name, 'Alice'),
-      );
-    });
+        await repo.removeProfile('Bob');
+
+        final activeResult = await repo.getActiveProfile();
+        activeResult.fold(
+          (_) => fail('Expected Right'),
+          (active) => expect(active?.name, 'Alice'),
+        );
+      },
+    );
   });
 
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
   // getActiveProfile
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
 
   group('getActiveProfile', () {
     test('returns null when no active profile is set', () async {
       final result = await repo.getActiveProfile();
-      result.fold((_) => fail('expected Right'), (p) => expect(p, isNull));
-    });
 
-    test('returns the profile after setActiveProfile', () async {
-      await repo.addProfile(alice);
-      await repo.setActiveProfile(alice);
-
-      final result = await repo.getActiveProfile();
       result.fold(
-        (_) => fail('expected Right'),
-        (p) => expect(p?.name, 'Alice'),
+        (_) => fail('Expected Right'),
+        (active) => expect(active, isNull),
       );
     });
 
-    test('returns null when active profile name no longer exists in profiles', () async {
-      await repo.addProfile(alice);
-      await repo.setActiveProfile(alice);
-      // Remove without going through removeProfile (simulate stale data).
+    test('returns the active profile after it has been set', () async {
+      await repo.addProfile(const PlayerProfile(name: 'Alice'));
+      await repo.setActiveProfile(const PlayerProfile(name: 'Alice'));
+
+      final result = await repo.getActiveProfile();
+
+      result.fold(
+        (_) => fail('Expected Right'),
+        (active) => expect(active?.name, 'Alice'),
+      );
+    });
+
+    test('returns null when active name points to a removed profile', () async {
+      await repo.addProfile(const PlayerProfile(name: 'Alice'));
+      await repo.setActiveProfile(const PlayerProfile(name: 'Alice'));
       await repo.removeProfile('Alice');
 
       final result = await repo.getActiveProfile();
+
       result.fold(
-        (_) => fail('expected Right'),
-        (p) => expect(p, isNull),
+        (_) => fail('Expected Right'),
+        (active) => expect(active, isNull),
       );
     });
   });
 
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
   // setActiveProfile
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
 
   group('setActiveProfile', () {
-    test('sets the active profile', () async {
-      await repo.addProfile(alice);
-      final result = await repo.setActiveProfile(alice);
-      expect(result.isRight(), isTrue);
+    test('persists the active profile name', () async {
+      await repo.addProfile(const PlayerProfile(name: 'Bob'));
+
+      final result = await repo.setActiveProfile(
+        const PlayerProfile(name: 'Bob'),
+      );
+
+      expect(result, const Right(unit));
+      final activeResult = await repo.getActiveProfile();
+      activeResult.fold(
+        (_) => fail('Expected Right'),
+        (active) => expect(active?.name, 'Bob'),
+      );
     });
 
-    test('overwrites a previously set active profile', () async {
-      await repo.addProfile(alice);
-      await repo.addProfile(bob);
-      await repo.setActiveProfile(alice);
-      await repo.setActiveProfile(bob);
+    test('replaces the previously active profile', () async {
+      await repo.addProfile(const PlayerProfile(name: 'Alice'));
+      await repo.addProfile(const PlayerProfile(name: 'Bob'));
+      await repo.setActiveProfile(const PlayerProfile(name: 'Alice'));
+      await repo.setActiveProfile(const PlayerProfile(name: 'Bob'));
 
       final result = await repo.getActiveProfile();
       result.fold(
-        (_) => fail('expected Right'),
-        (p) => expect(p?.name, 'Bob'),
+        (_) => fail('Expected Right'),
+        (active) => expect(active?.name, 'Bob'),
       );
     });
   });

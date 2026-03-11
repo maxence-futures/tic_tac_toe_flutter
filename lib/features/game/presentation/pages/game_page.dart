@@ -2,16 +2,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/extensions/build_context_extension.dart';
-import '../../../../core/router/app_router.dart';
-import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/ui/widgets/ttt_board_widget.dart';
-import '../../domain/entities/difficulty.dart';
-import '../../domain/entities/game_state.dart';
-import '../../domain/entities/game_status.dart';
-import '../providers/game_notifier.dart';
-import '../widgets/cell_widget.dart';
+import 'package:tic_tac_toe_flutter/core/extensions/build_context_extension.dart';
+import 'package:tic_tac_toe_flutter/core/router/app_router.dart';
+import 'package:tic_tac_toe_flutter/core/ui/theme/app_spacing.dart';
+import 'package:tic_tac_toe_flutter/core/ui/widgets/ttt_board_widget.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/difficulty.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/game_state.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/game_status.dart';
+import 'package:tic_tac_toe_flutter/features/game/presentation/providers/game_notifier.dart';
 
 @RoutePage()
 class GamePage extends ConsumerWidget {
@@ -31,9 +29,9 @@ class GamePage extends ConsumerWidget {
     final colors = context.appColors;
 
     ref.listen(gameProvider(playerName, difficulty), (prev, next) {
-      if (prev?.status is GameStatusPlaying &&
-          next.status is! GameStatusPlaying) {
-        _showResultSheet(context, ref, next.status, notifier.resetGame);
+      if (prev?.gameStatus is GameStatusPlaying &&
+          next.gameStatus is! GameStatusPlaying) {
+        _showResultSheet(context, ref, next.gameStatus, notifier.resetGame);
       }
     });
 
@@ -41,6 +39,9 @@ class GamePage extends ConsumerWidget {
       backgroundColor: colors.background,
       appBar: AppBar(
         title: Text(context.locals.appTitle),
+        titleTextStyle: context.textTheme.titleMedium?.copyWith(
+          color: colors.text,
+        ),
         backgroundColor: colors.background,
         elevation: AppSpacing.elevationNone,
       ),
@@ -49,7 +50,7 @@ class GamePage extends ConsumerWidget {
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             children: [
-              GameHeaderWidget(
+              _GameHeader(
                     playerName: playerName,
                     isCpuThinking: state.isCpuThinking,
                     currentSymbol: state.currentSymbol,
@@ -83,7 +84,7 @@ class GamePage extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xl),
               _StatusBar(state: state)
-                  .animate(key: ValueKey(state.status))
+                  .animate(key: ValueKey(state.gameStatus))
                   .fadeIn(duration: 300.ms)
                   .slideY(begin: 0.3, curve: Curves.easeOut),
             ],
@@ -96,7 +97,7 @@ class GamePage extends ConsumerWidget {
   void _showResultSheet(
     BuildContext context,
     WidgetRef ref,
-    GameStatus status,
+    GameStatus gameStatus,
     VoidCallback onReplay,
   ) {
     showModalBottomSheet<void>(
@@ -109,13 +110,111 @@ class GamePage extends ConsumerWidget {
         ),
       ),
       builder: (_) => _ResultSheet(
-        status: status,
+        gameStatus: gameStatus,
         playerName: playerName,
         onReplay: () {
           Navigator.of(context).pop();
           onReplay();
         },
         onHome: () => context.router.replaceAll([const HomeRoute()]),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+
+class _GameHeader extends StatelessWidget {
+  const _GameHeader({
+    required this.playerName,
+    required this.isCpuThinking,
+    required this.currentSymbol,
+    required this.primaryColor,
+    required this.secondaryColor,
+    required this.textSubtleColor,
+  });
+
+  final String playerName;
+  final bool isCpuThinking;
+  final String currentSymbol;
+  final Color primaryColor;
+  final Color secondaryColor;
+  final Color textSubtleColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _ScoreChip(
+          label: playerName,
+          symbol: 'X',
+          isCurrent: currentSymbol == 'X' && !isCpuThinking,
+          color: primaryColor,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Text(
+            'vs',
+            style: TextStyle(color: textSubtleColor, fontSize: 16),
+          ),
+        ),
+        _ScoreChip(
+          label: 'CPU',
+          symbol: 'O',
+          isCurrent: currentSymbol == 'O' || isCpuThinking,
+          color: secondaryColor,
+        ),
+      ],
+    );
+  }
+}
+
+class _ScoreChip extends StatelessWidget {
+  const _ScoreChip({
+    required this.label,
+    required this.symbol,
+    required this.isCurrent,
+    required this.color,
+  });
+
+  final String label;
+  final String symbol;
+  final bool isCurrent;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: context.durations.fast,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: isCurrent ? color.withValues(alpha: 0.15) : Colors.transparent,
+        border: Border.all(
+          color: isCurrent ? color : Colors.transparent,
+          width: 2,
+        ),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(AppSpacing.radiusFull),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            symbol,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Text(label),
+        ],
       ),
     );
   }
@@ -131,11 +230,14 @@ class _StatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final text = state.isCpuThinking
-        ? context.locals.gameCpuThinking
-        : state.status is GameStatusPlaying
-        ? context.locals.gameYourTurn
-        : '';
+    final String text;
+    if (state.isCpuThinking) {
+      text = context.locals.gameCpuThinking;
+    } else if (state.gameStatus is GameStatusPlaying) {
+      text = context.locals.gameYourTurn;
+    } else {
+      text = '';
+    }
 
     if (text.isEmpty) return const SizedBox.shrink();
 
@@ -166,13 +268,13 @@ class _StatusBar extends StatelessWidget {
 
 class _ResultSheet extends StatelessWidget {
   const _ResultSheet({
-    required this.status,
+    required this.gameStatus,
     required this.playerName,
     required this.onReplay,
     required this.onHome,
   });
 
-  final GameStatus status;
+  final GameStatus gameStatus;
   final String playerName;
   final VoidCallback onReplay;
   final VoidCallback onHome;
@@ -181,7 +283,7 @@ class _ResultSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    final (emoji, title, titleColor) = switch (status) {
+    final (emoji, title, titleColor) = switch (gameStatus) {
       GameStatusWon(:final winner) when winner == 'X' => (
         '🎉',
         context.locals.gameYouWon,

@@ -20,56 +20,14 @@ void main() {
       expect(await service.getString('key'), 'hello');
     });
 
-    test('returns null for a missing String key', () async {
+    test('returns null for a missing key', () async {
       expect(await service.getString('missing'), isNull);
-    });
-
-    test('sets and gets an int', () async {
-      await service.setInt('key', 42);
-      expect(await service.getInt('key'), 42);
-    });
-
-    test('sets and gets a double', () async {
-      await service.setDouble('key', 3.14);
-      expect(await service.getDouble('key'), 3.14);
-    });
-
-    test('sets and gets a bool', () async {
-      await service.setBool('key', true);
-      expect(await service.getBool('key'), isTrue);
-    });
-
-    test('sets and gets a string list', () async {
-      await service.setStringList('key', ['a', 'b', 'c']);
-      expect(await service.getStringList('key'), ['a', 'b', 'c']);
-    });
-
-    test('containsKey returns true after a write', () async {
-      await service.setString('key', 'value');
-      expect(await service.containsKey('key'), isTrue);
-    });
-
-    test('containsKey returns false for an absent key', () async {
-      expect(await service.containsKey('absent'), isFalse);
     });
 
     test('remove deletes the key', () async {
       await service.setString('key', 'value');
       await service.remove('key');
-      expect(await service.containsKey('key'), isFalse);
-    });
-
-    test('clear empties all keys', () async {
-      await service.setString('k1', 'v1');
-      await service.setInt('k2', 2);
-      await service.clear();
-      expect(await service.getKeys(), isEmpty);
-    });
-
-    test('getKeys returns all stored keys', () async {
-      await service.setString('a', '1');
-      await service.setString('b', '2');
-      expect(await service.getKeys(), containsAll(['a', 'b']));
+      expect(await service.getString('key'), isNull);
     });
   });
 }

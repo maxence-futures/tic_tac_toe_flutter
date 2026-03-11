@@ -1,14 +1,13 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../../../core/database/app_database.dart';
-import '../../data/repositories/game_repository_impl.dart';
-import '../../domain/entities/difficulty.dart';
-import '../../domain/entities/game_move.dart';
-import '../../domain/entities/game_state.dart';
-import '../../domain/entities/game_status.dart';
-import '../../domain/repositories/game_repository.dart';
-import '../../domain/usecases/get_cpu_move_usecase.dart';
-import '../../domain/usecases/save_game_usecase.dart';
+import 'package:tic_tac_toe_flutter/core/database/app_database.dart';
+import 'package:tic_tac_toe_flutter/core/ui/theme/app_durations.dart';
+import 'package:tic_tac_toe_flutter/features/game/data/repositories/game_repository_impl.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/difficulty.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/game_state.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/entities/game_status.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/repositories/game_repository.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/usecases/get_cpu_move_usecase.dart';
+import 'package:tic_tac_toe_flutter/features/game/domain/usecases/save_game_usecase.dart';
 
 part 'game_notifier.g.dart';
 
@@ -17,26 +16,20 @@ GameRepository gameRepository(Ref ref) {
   return GameRepositoryImpl(ref.watch(appDatabaseProvider));
 }
 
+@Riverpod(keepAlive: false)
+GetCpuMoveUsecase getCpuMoveUsecase(Ref ref) {
+  return const GetCpuMoveUsecase();
+}
+
+@Riverpod(keepAlive: false)
+SaveGameUsecase saveGameUsecase(Ref ref) {
+  return SaveGameUsecase(ref.watch(gameRepositoryProvider));
+}
+
 @riverpod
 class GameNotifier extends _$GameNotifier {
-  static const _winPatterns = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-
-  late final GetCpuMoveUsecase _getCpuMove;
-  late final SaveGameUsecase _saveGame;
-
   @override
   GameState build(String playerName, Difficulty difficulty) {
-    _getCpuMove = const GetCpuMoveUsecase();
-    _saveGame = SaveGameUsecase(ref.read(gameRepositoryProvider));
     return GameState.initial(playerName: playerName, difficulty: difficulty);
   }
 
@@ -45,30 +38,38 @@ class GameNotifier extends _$GameNotifier {
   // ---------------------------------------------------------------------------
 
   Future<void> makeMove(int position) async {
-    if (!_canMove(position)) return;
+    // Ignore taps during CPU turn, on occupied cells, or when the game is over.
+    if (!state.canPlayerMove(position)) return;
 
-    final afterPlayer = _applyMove(state, position, 'X', isCpu: false);
-    final playerCheck = _evaluate(afterPlayer);
+    // --- Player move ---
+    final playerCheck = state.withMove(position, 'X', isCpu: false).evaluate();
     state = playerCheck;
 
-    if (playerCheck.status is! GameStatusPlaying) {
+    // Player wins or board is full — persist and stop before triggering CPU.
+    if (playerCheck.gameStatus is! GameStatusPlaying) {
       await _persistGame(playerCheck);
       return;
     }
 
+    // --- CPU move ---
+    // Show a thinking indicator for a human-perceivable delay.
     state = playerCheck.copyWith(isCpuThinking: true, currentSymbol: 'O');
-    await Future<void>.delayed(const Duration(milliseconds: 750));
+    await Future<void>.delayed(AppDurations().cpuThinking);
 
-    final cpuPos = _getCpuMove(state.board, state.difficulty);
+    // -1 means no move is available (full board edge case already caught above).
+    final cpuPos = ref.read(getCpuMoveUsecaseProvider)(
+      board: state.board,
+      difficulty: state.difficulty,
+    );
     if (cpuPos == -1) return;
 
-    final afterCpu = _applyMove(state, cpuPos, 'O', isCpu: true);
-    final cpuCheck = _evaluate(
-      afterCpu,
-    ).copyWith(isCpuThinking: false, currentSymbol: 'X');
+    final cpuCheck = state
+        .withMove(cpuPos, 'O', isCpu: true)
+        .evaluate()
+        .copyWith(isCpuThinking: false, currentSymbol: 'X');
     state = cpuCheck;
 
-    if (cpuCheck.status is! GameStatusPlaying) {
+    if (cpuCheck.gameStatus is! GameStatusPlaying) {
       await _persistGame(cpuCheck);
     }
   }
@@ -81,49 +82,8 @@ class GameNotifier extends _$GameNotifier {
   }
 
   // ---------------------------------------------------------------------------
-  // Internal helpers
-  // ---------------------------------------------------------------------------
-
-  bool _canMove(int position) =>
-      state.status is GameStatusPlaying &&
-      !state.isCpuThinking &&
-      state.board[position] == null &&
-      state.currentSymbol == 'X';
-
-  GameState _applyMove(
-    GameState s,
-    int pos,
-    String symbol, {
-    required bool isCpu,
-  }) {
-    final board = List<String?>.from(s.board)..[pos] = symbol;
-    final move = GameMove(
-      position: pos,
-      symbol: symbol,
-      isCpu: isCpu,
-      timestamp: DateTime.now(),
-    );
-    return s.copyWith(board: board, moves: [...s.moves, move]);
-  }
-
-  GameState _evaluate(GameState s) {
-    for (final p in _winPatterns) {
-      if (s.board[p[0]] != null &&
-          s.board[p[0]] == s.board[p[1]] &&
-          s.board[p[1]] == s.board[p[2]]) {
-        return s.copyWith(
-          status: GameStatus.won(winner: s.board[p[0]]!),
-          winningPositions: p,
-        );
-      }
-    }
-    if (!s.board.contains(null)) {
-      return s.copyWith(status: const GameStatus.draw());
-    }
-    return s;
-  }
 
   Future<void> _persistGame(GameState s) async {
-    await _saveGame(s);
+    await ref.read(saveGameUsecaseProvider)(s);
   }
 }

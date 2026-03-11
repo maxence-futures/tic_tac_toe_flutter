@@ -41,8 +41,8 @@ lib/
 ├── core/                    # Shared infrastructure
 │   ├── database/            # Drift database + models
 │   ├── domain/
-│   │   └── game_rules/      # BoardRules — pure, shared win-detection logic
-│   ├── extensions/          # BuildContext extensions (theme, l10n…)
+│   │   └── game_rules/      # BoardRules — pure, shared game logic (win detection)
+│   ├── extensions/          # BuildContext extensions (theme, l10n, etc.)
 │   ├── l10n/                # ARB files (i18n source of truth)
 │   ├── router/              # AutoRoute configuration
 │   ├── services/            # SharedPreferences, ErrorTracking (interface + impl)
@@ -54,6 +54,7 @@ lib/
     ├── game/
     │   ├── data/            # Drift repository impl
     │   ├── domain/          # Entities (Freezed), repository interfaces, use cases
+    │   │                    # GameState carries canPlayerMove / withMove / evaluate
     │   └── presentation/    # GameNotifier, pages, widgets
     ├── history/
     │   ├── data/
@@ -71,24 +72,17 @@ lib/
 `presentation` → `domain` ← `data`
 
 Repository interfaces live in `domain/`, concrete implementations in `data/`.  
-Pure game rules shared across features (`BoardRules`) live in `core/domain/` to avoid cross-feature imports.
+Pure game rules that are shared across features (`BoardRules`) live in `core/domain/` to avoid cross-feature imports.
 
 ### Domain logic on entities
 
-State transitions that depend only on `GameState` are extension methods on the entity itself, keeping `GameNotifier` as a pure orchestrator:
+State transitions that depend only on `GameState` are extension methods on the entity itself, keeping the notifier as an orchestrator only:
 
 | Method | Responsibility |
 | --- | --- |
-| `GameState.canPlayerMove(int)` | Guard: is the human allowed to play at this position? |
-| `GameState.withMove(int, String)` | Pure state transition: apply a move and record it |
+| `GameState.canPlayerMove(int)` | Guard: is the human allowed to play here? |
+| `GameState.withMove(int, String)` | Pure state transition: apply a move |
 | `GameState.evaluate()` | Determine won / draw / still playing |
-
-### Error handling
-
-All async operations use `dartz`'s `Either<Exception, T>`. On `Left`, every notifier:
-
-1. Forwards the exception to `ErrorTrackingService.captureException`
-2. Rethrows it so Riverpod surfaces an `AsyncError` to the UI
 
 ---
 
@@ -165,19 +159,19 @@ The `make coverage` target runs `scripts/coverage.sh`, which:
 
 ### Test coverage
 
-| Layer | File | Strategy |
-| --- | --- | --- |
-| Core — database | `test/core/database/app_database_test.dart` | Real in-memory Drift DB |
-| Core — SharedPreferences | `test/core/services/shared_preferences/shared_preferences_service_test.dart` | Real in-memory storage |
-| Core — ErrorTracking | `test/core/services/error_tracking/error_tracking_service_test.dart` | Real impl |
-| Game — Minimax usecase | `test/features/game/domain/usecases/get_cpu_move_usecase_test.dart` | Pure function, no mock |
-| Game — SaveGame usecase | `test/features/game/domain/usecases/save_game_usecase_test.dart` | Mockito |
-| Game — GameNotifier | `test/features/game/presentation/providers/game_notifier_test.dart` | ProviderContainer |
-| History — GetHistory usecase | `test/features/history/domain/usecases/get_game_history_usecase_test.dart` | Mockito |
-| History — GameReplayNotifier | `test/features/history/presentation/providers/game_replay_notifier_test.dart` | ProviderContainer |
-| Player — repository impl | `test/features/player/data/repositories/player_profile_repository_impl_test.dart` | Real in-memory storage |
+| Area | Test file |
+| --- | --- |
+| Database schema | `test/core/database/app_database_test.dart` |
+| SharedPreferences service | `test/core/services/shared_preferences/shared_preferences_service_test.dart` |
+| Error tracking service | `test/core/services/error_tracking/error_tracking_service_test.dart` |
+| GetCpuMoveUsecase (Minimax) | `test/features/game/domain/usecases/get_cpu_move_usecase_test.dart` |
+| SaveGameUsecase | `test/features/game/domain/usecases/save_game_usecase_test.dart` |
+| GameNotifier | `test/features/game/presentation/providers/game_notifier_test.dart` |
+| GetGameHistoryUsecase | `test/features/history/domain/usecases/get_game_history_usecase_test.dart` |
+| GameReplayNotifier | `test/features/history/presentation/providers/game_replay_notifier_test.dart` |
+| PlayerProfileRepositoryImpl | `test/features/player/data/repositories/player_profile_repository_impl_test.dart` |
 
-**Notable:** the Minimax (`hard` difficulty) is covered by a **property-based test** — 100 games are simulated against a random opponent and O must never lose.
+The Minimax (`hard` difficulty) is tested with a **"never loses"** property test: 100 games are simulated against a random opponent and O must never lose.
 
 ---
 
@@ -242,9 +236,9 @@ push / PR
 │   ├── app.dart
 │   ├── main.dart
 │   ├── core/
-│   │   ├── domain/game_rules/          # BoardRules (shared win-detection)
-│   │   ├── services/                   # ErrorTracking + SharedPreferences
-│   │   └── ui/theme/                   # AppColors, AppSpacing, AppTypography, AppDurations
+│   │   ├── domain/game_rules/ # BoardRules (shared win-detection logic)
+│   │   ├── services/          # ErrorTracking + SharedPreferences (interface + impl)
+│   │   └── ui/theme/          # AppColors, AppSpacing, AppTypography, AppDurations
 │   └── features/
 ├── test/
 │   ├── core/

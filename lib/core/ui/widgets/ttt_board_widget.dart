@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:tic_tac_toe_flutter/core/extensions/build_context_extension.dart';
 
 /// A 3×3 Tic-Tac-Toe board used in both game play and replay.
 ///
@@ -23,12 +24,14 @@ class TttBoardWidget extends StatelessWidget {
     this.lastMovePosition,
     this.onCellTap,
     this.animationSeed = 0,
+    this.fontSize = 42,
   });
 
   final List<String?> board;
   final Color primaryColor;
   final Color secondaryColor;
   final Color borderColor;
+  final double fontSize;
 
   /// Positions forming the winning line — highlighted with [winningColor].
   final List<int> winningPositions;
@@ -58,6 +61,7 @@ class TttBoardWidget extends StatelessWidget {
         itemBuilder: (_, index) => _TttCell(
           index: index,
           symbol: board[index],
+          fontSize: fontSize,
           primaryColor: primaryColor,
           secondaryColor: secondaryColor,
           borderColor: borderColor,
@@ -88,6 +92,7 @@ class _TttCell extends StatelessWidget {
     required this.isLastMove,
     required this.animationSeed,
     required this.onTap,
+    required this.fontSize,
   });
 
   final int index;
@@ -100,6 +105,7 @@ class _TttCell extends StatelessWidget {
   final bool isLastMove;
   final int animationSeed;
   final VoidCallback? onTap;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -107,16 +113,16 @@ class _TttCell extends StatelessWidget {
 
     final cellBorderColor = isLastMove ? symbolColor : borderColor;
     final cellBorderWidth = isLastMove ? 2.5 : 1.5;
-    final cellBgColor = isWinning
-        ? (winningColor ?? primaryColor).withValues(alpha: 0.15)
-        : isLastMove
-        ? symbolColor.withValues(alpha: 0.1)
-        : Colors.transparent;
+    final cellBgColor = switch ((isWinning, isLastMove)) {
+      (true, _) => (winningColor ?? primaryColor).withValues(alpha: 0.15),
+      (_, true) => symbolColor.withValues(alpha: 0.1),
+      _ => Colors.transparent,
+    };
 
     return GestureDetector(
       onTap: symbol == null ? onTap : null,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration: context.durations.normal,
         decoration: BoxDecoration(
           color: cellBgColor,
           border: Border.all(color: cellBorderColor, width: cellBorderWidth),
@@ -126,7 +132,7 @@ class _TttCell extends StatelessWidget {
               ? Text(
                       symbol!,
                       style: TextStyle(
-                        fontSize: 42,
+                        fontSize: fontSize,
                         fontWeight: FontWeight.w900,
                         color: symbolColor,
                       ),

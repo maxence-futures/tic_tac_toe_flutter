@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/services/shared_preferences/shared_preferences_service.dart';
-import '../../domain/entities/player_profile.dart';
-import '../../domain/repositories/player_profile_repository.dart';
+import 'package:tic_tac_toe_flutter/core/services/shared_preferences/shared_preferences_service.dart';
+import 'package:tic_tac_toe_flutter/features/player/domain/entities/player_profile.dart';
+import 'package:tic_tac_toe_flutter/features/player/domain/repositories/player_profile_repository.dart';
 
 const _kProfiles = 'player_profiles';
 const _kActiveProfile = 'active_player_name';
